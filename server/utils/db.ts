@@ -2,29 +2,29 @@
 // Dev: better-sqlite3 (local file)
 // Production: Cloudflare D1
 
-import Database from 'better-sqlite3'
-import fs from 'node:fs'
-import path from 'node:path'
+let dbInstance: any = null
 
-let dbInstance: Database.Database | null = null
+function getDb(): any {
+  if (dbInstance) return dbInstance
 
-const DB_PATH = path.join(process.cwd(), '.data', 'arsenal.db')
+  // Dynamic import to avoid bundling better-sqlite3 in production
+  const { default: Database } = require('better-sqlite3')
+  const fs = require('node:fs')
+  const path = require('node:path')
 
-function getDb(): Database.Database {
-  if (!dbInstance) {
-    const dir = path.dirname(DB_PATH)
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true })
-    }
-    dbInstance = new Database(DB_PATH)
-    dbInstance.pragma('journal_mode = WAL')
-    dbInstance.pragma('foreign_keys = ON')
-    initSchema(dbInstance)
+  const DB_PATH = path.join(process.cwd(), '.data', 'arsenal.db')
+  const dir = path.dirname(DB_PATH)
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true })
   }
+  dbInstance = new Database(DB_PATH)
+  dbInstance.pragma('journal_mode = WAL')
+  dbInstance.pragma('foreign_keys = ON')
+  initSchema(dbInstance)
   return dbInstance
 }
 
-function initSchema(db: Database.Database) {
+function initSchema(db: any) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS teams (
       id INTEGER PRIMARY KEY,
@@ -134,20 +134,20 @@ function initSchema(db: Database.Database) {
 }
 
 // Helper: get DB instance
-export function useDb(event?: any): Database.Database {
+export function useDb(event?: any): any {
   return getDb()
 }
 
 // Query helpers
-export function dbAll(db: Database.Database, sql: string, params: any[] = []): any[] {
+export function dbAll(db: any, sql: string, params: any[] = []): any[] {
   return db.prepare(sql).all(...params)
 }
 
-export function dbGet(db: Database.Database, sql: string, params: any[] = []): any | null {
+export function dbGet(db: any, sql: string, params: any[] = []): any | null {
   return db.prepare(sql).get(...params) || null
 }
 
-export function dbRun(db: Database.Database, sql: string, params: any[] = []): any {
+export function dbRun(db: any, sql: string, params: any[] = []): any {
   return db.prepare(sql).run(...params)
 }
 

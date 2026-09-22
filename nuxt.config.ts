@@ -29,11 +29,6 @@ export default defineNuxtConfig({
 
   nitro: {
     preset: process.env.NITRO_PRESET || 'cloudflare-pages',
-    // Better-sqlite3 is a native module, must be externalized
-    externals: {
-      inline: [],
-      external: ['better-sqlite3']
-    },
     // Compress assets
     compressPublicAssets: true,
     // Route rules for caching

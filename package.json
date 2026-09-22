@@ -11,7 +11,6 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
-    "better-sqlite3": "^13.0.3",
     "nuxt": "^3.14.0",
     "vue": "^3.5.0",
     "vue-router": "^4.4.0"
@@ -21,5 +20,8 @@
     "@nuxtjs/tailwindcss": "^6.12.0",
     "tailwindcss": "^3.4.0",
     "wrangler": "^4.136.1"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^13.0.3"
   }
 }
