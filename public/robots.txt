@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://arsenal-hub.pages.dev/sitemap.xml

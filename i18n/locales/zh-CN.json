@@ -1,0 +1,167 @@
+{
+  "siteName": "Arsenal Hub",
+  "siteTagline": "阿森纳比赛中心",
+  "nav": {
+    "home": "首页",
+    "fixtures": "赛程",
+    "standings": "积分榜",
+    "squad": "球员",
+    "scorers": "射手榜",
+    "legends": "传奇",
+    "watch": "观赛指南",
+    "club": "俱乐部",
+    "stadium": "球场",
+    "women": "女足"
+  },
+  "common": {
+    "home": "主场",
+    "away": "客场",
+    "tba": "待定",
+    "vs": "VS",
+    "won": "胜",
+    "drawn": "平",
+    "lost": "负",
+    "played": "已赛",
+    "points": "积分",
+    "goalsFor": "进球",
+    "goalsAgainst": "失球",
+    "goalDifference": "净胜球",
+    "form": "近况",
+    "loading": "加载中...",
+    "noData": "暂无数据",
+    "error": "数据加载失败"
+  },
+  "home": {
+    "nextMatch": "下场比赛",
+    "recentResults": "最近赛果",
+    "days": "天",
+    "hours": "时",
+    "minutes": "分",
+    "seconds": "秒",
+    "viewAllFixtures": "查看全部赛程",
+    "viewStandings": "查看积分榜"
+  },
+  "fixtures": {
+    "title": "赛程表",
+    "subtitle": "2026-27 赛季完整赛程",
+    "all": "全部",
+    "upcoming": "未开始",
+    "finished": "已完赛",
+    "premierLeague": "英超",
+    "championsLeague": "欧冠",
+    "faCup": "足总杯",
+    "leagueCup": "联赛杯",
+    "filterByMonth": "按月份筛选",
+    "matchday": "第{round}轮",
+    "kickoff": "开赛时间"
+  },
+  "fixture": {
+    "upcoming": "未开始",
+    "finished": "已完赛",
+    "live": "直播中"
+  },
+  "standings": {
+    "title": "英超积分榜",
+    "subtitle": "2026-27 赛季实时排名",
+    "position": "名次",
+    "team": "球队",
+    "form": "近5轮"
+  },
+  "squad": {
+    "title": "一线队",
+    "subtitle": "2026-27 赛季阵容",
+    "appearances": "出场",
+    "minutes": "分钟",
+    "goals": "进球",
+    "assists": "助攻",
+    "cleanSheets": "零封",
+    "yellowCards": "黄牌",
+    "redCards": "红牌",
+    "form": "状态",
+    "totalPoints": "FPL得分",
+    "selectedBy": "选中率",
+    "yearsOld": "岁",
+    "news": "队内消息",
+    "seasonStats": "赛季数据",
+    "lastFive": "近5场表现",
+    "backToList": "返回球员名单"
+  },
+  "scorers": {
+    "title": "射手榜",
+    "subtitle": "英超射手榜前20",
+    "player": "球员",
+    "team": "球队",
+    "goals": "进球",
+    "assists": "助攻",
+    "penalties": "点球"
+  },
+  "legends": {
+    "title": "传奇球员",
+    "subtitle": "阿森纳历史传奇球员"
+  },
+  "club": {
+    "title": "俱乐部",
+    "subtitle": "阿森纳足球俱乐部介绍",
+    "founded": "成立年份",
+    "ground": "主场",
+    "city": "城市",
+    "manager": "主教练",
+    "chairman": "主席",
+    "nickname": "绰号",
+    "honours": "荣誉室",
+    "officialSite": "官方网站"
+  },
+  "stadium": {
+    "title": "球场指南",
+    "subtitle": "酋长球场",
+    "name": "球场名称",
+    "capacity": "容量",
+    "opened": "启用年份",
+    "architect": "设计师",
+    "cost": "造价",
+    "address": "地址",
+    "stands": "看台",
+    "transport": "交通指南"
+  },
+  "women": {
+    "title": "阿森纳女足",
+    "subtitle": "英格兰最成功的女足俱乐部",
+    "founded": "成立年份",
+    "ground": "主场",
+    "manager": "主教练"
+  },
+  "watch": {
+    "title": "观赛指南",
+    "subtitle": "正版直播平台导航",
+    "freeWatch": "免费观看",
+    "paidWatch": "付费观看",
+    "highlights": "赛后集锦",
+    "cctv": "央视频",
+    "cctvDesc": "每轮精选焦点战免费直播",
+    "migu": "咪咕视频",
+    "miguDesc": "英超全380场独家版权",
+    "bilibili": "B站集锦",
+    "bilibiliDesc": "赛后精彩集锦回放",
+    "youtube": "Premier League YouTube",
+    "youtubeDesc": "官方赛后集锦（终场后2小时）",
+    "skySports": "Sky Sports",
+    "skySportsDesc": "英国主转播商",
+    "tntSports": "TNT Sports",
+    "tntSportsDesc": "英国转播商，部分场次",
+    "bbcHighlights": "BBC Match of the Day",
+    "bbcDesc": "英国免费集锦节目",
+    "disclaimer": "本站不提供直播播放，以下均为正版平台跳转链接。转播安排以各平台实际为准。"
+  },
+  "footer": {
+    "disclaimer": "本站为非官方球迷站，不关联阿森纳足球俱乐部、英超联盟或任何转播机构。",
+    "copyright": "Arsenal Hub © 2026 | 仅供球迷交流",
+    "dataSource": "数据来源：FPL API / football-data.org"
+  },
+  "league": {
+    "Premier League": "英超",
+    "Champions League": "欧冠",
+    "FA Cup": "足总杯",
+    "League Cup": "联赛杯",
+    "Community Shield": "社区盾杯"
+  }
+}

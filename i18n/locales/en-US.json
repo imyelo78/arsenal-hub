@@ -1,0 +1,167 @@
+{
+  "siteName": "Arsenal Hub",
+  "siteTagline": "Arsenal Match Center",
+  "nav": {
+    "home": "Home",
+    "fixtures": "Fixtures",
+    "standings": "Table",
+    "squad": "Squad",
+    "scorers": "Scorers",
+    "legends": "Legends",
+    "watch": "Watch Guide",
+    "club": "Club",
+    "stadium": "Stadium",
+    "women": "Women"
+  },
+  "common": {
+    "home": "Home",
+    "away": "Away",
+    "tba": "TBA",
+    "vs": "VS",
+    "won": "W",
+    "drawn": "D",
+    "lost": "L",
+    "played": "P",
+    "points": "Pts",
+    "goalsFor": "GF",
+    "goalsAgainst": "GA",
+    "goalDifference": "GD",
+    "form": "Form",
+    "loading": "Loading...",
+    "noData": "No data available",
+    "error": "Failed to load data"
+  },
+  "home": {
+    "nextMatch": "Next Match",
+    "recentResults": "Recent Results",
+    "days": "Days",
+    "hours": "Hrs",
+    "minutes": "Min",
+    "seconds": "Sec",
+    "viewAllFixtures": "View All Fixtures",
+    "viewStandings": "View Table"
+  },
+  "fixtures": {
+    "title": "Fixtures",
+    "subtitle": "2026-27 Season Full Schedule",
+    "all": "All",
+    "upcoming": "Upcoming",
+    "finished": "Finished",
+    "premierLeague": "Premier League",
+    "championsLeague": "Champions League",
+    "faCup": "FA Cup",
+    "leagueCup": "League Cup",
+    "filterByMonth": "Filter by Month",
+    "matchday": "Matchday {round}",
+    "kickoff": "Kickoff"
+  },
+  "fixture": {
+    "upcoming": "Upcoming",
+    "finished": "FT",
+    "live": "LIVE"
+  },
+  "standings": {
+    "title": "Premier League Table",
+    "subtitle": "2026-27 Season Live Standings",
+    "position": "Pos",
+    "team": "Team",
+    "form": "Last 5"
+  },
+  "squad": {
+    "title": "First Team",
+    "subtitle": "2026-27 Season Squad",
+    "appearances": "Apps",
+    "minutes": "Minutes",
+    "goals": "Goals",
+    "assists": "Assists",
+    "cleanSheets": "Clean Sheets",
+    "yellowCards": "Yellows",
+    "redCards": "Reds",
+    "form": "Form",
+    "totalPoints": "FPL Points",
+    "selectedBy": "Selected",
+    "yearsOld": "yrs",
+    "news": "Team News",
+    "seasonStats": "Season Stats",
+    "lastFive": "Last 5 Matches",
+    "backToList": "Back to Squad"
+  },
+  "scorers": {
+    "title": "Top Scorers",
+    "subtitle": "Premier League Top 20 Scorers",
+    "player": "Player",
+    "team": "Team",
+    "goals": "Goals",
+    "assists": "Assists",
+    "penalties": "Penalties"
+  },
+  "legends": {
+    "title": "Club Legends",
+    "subtitle": "Arsenal\'s all-time greats"
+  },
+  "club": {
+    "title": "The Club",
+    "subtitle": "Arsenal Football Club",
+    "founded": "Founded",
+    "ground": "Ground",
+    "city": "City",
+    "manager": "Manager",
+    "chairman": "Chairman",
+    "nickname": "Nickname",
+    "honours": "Honours",
+    "officialSite": "Official Website"
+  },
+  "stadium": {
+    "title": "Stadium Guide",
+    "subtitle": "Emirates Stadium",
+    "name": "Name",
+    "capacity": "Capacity",
+    "opened": "Opened",
+    "architect": "Architect",
+    "cost": "Cost",
+    "address": "Address",
+    "stands": "Stands",
+    "transport": "Transport"
+  },
+  "women": {
+    "title": "Arsenal Women",
+    "subtitle": "England\'s most successful women\'s club",
+    "founded": "Founded",
+    "ground": "Ground",
+    "manager": "Manager"
+  },
+  "watch": {
+    "title": "Watch Guide",
+    "subtitle": "Official Broadcasting Platforms",
+    "freeWatch": "Free",
+    "paidWatch": "Paid",
+    "highlights": "Highlights",
+    "cctv": "CCTV Video / CCTV5",
+    "cctvDesc": "Free featured matches each round",
+    "migu": "Migu Video",
+    "miguDesc": "Exclusive all 380 PL matches in China",
+    "bilibili": "Bilibili Highlights",
+    "bilibiliDesc": "Post-match highlight replays",
+    "youtube": "Premier League YouTube",
+    "youtubeDesc": "Official highlights (2hrs after FT)",
+    "skySports": "Sky Sports",
+    "skySportsDesc": "UK primary broadcaster",
+    "tntSports": "TNT Sports",
+    "tntSportsDesc": "UK broadcaster, selected matches",
+    "bbcHighlights": "BBC Match of the Day",
+    "bbcDesc": "UK free highlights show",
+    "disclaimer": "This site does not stream any matches. Links below redirect to official broadcasting platforms. Broadcast schedules are subject to each platform."
+  },
+  "footer": {
+    "disclaimer": "This is an unofficial fan site, not affiliated with Arsenal FC, the Premier League, or any broadcaster.",
+    "copyright": "Arsenal Hub © 2026 | For fan community only",
+    "dataSource": "Data source: FPL API / football-data.org"
+  },
+  "league": {
+    "Premier League": "Premier League",
+    "Champions League": "Champions League",
+    "FA Cup": "FA Cup",
+    "League Cup": "League Cup",
+    "Community Shield": "Community Shield"
+  }
+}

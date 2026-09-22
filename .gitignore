@@ -1,0 +1,29 @@
+# Node
+node_modules
+.npm
+.nuxt
+.output
+dist
+
+# Env
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# Misc
+.DS_Store
+.idea
+.vscode
+
+# Cache
+.cache
+
+# SQLite database (local dev only)
+.data
+
+# Temp scripts
+download-photos.mjs
