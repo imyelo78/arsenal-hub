@@ -51,8 +51,13 @@ const dateLabel = computed(() => {
 const leagueLabel = computed(() => {
   const league = props.match?.league
   if (!league) return ''
-  if (typeof league === 'string') return league
-  return league.name || ''
+  const name = typeof league === 'string' ? league : league.name
+  if (!name) return ''
+  const map: Record<string, string> = {
+    'Premier League': locale.value === 'zh' ? t('fixtures.premierLeague') : name,
+    'Champions League': locale.value === 'zh' ? t('fixtures.championsLeague') : name
+  }
+  return map[name] || name
 })
 
 const roundLabel = computed(() => {

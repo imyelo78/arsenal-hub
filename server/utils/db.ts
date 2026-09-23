@@ -183,12 +183,50 @@ function initSchema(db: any) {
       next_sync INTEGER NOT NULL
     );
 
+    CREATE TABLE IF NOT EXISTS cl_fixtures (
+      id INTEGER PRIMARY KEY,
+      kickoff_time TEXT NOT NULL,
+      stage TEXT,
+      group_name TEXT,
+      matchday INTEGER,
+      team_h INTEGER NOT NULL,
+      team_h_name TEXT NOT NULL,
+      team_a INTEGER NOT NULL,
+      team_a_name TEXT NOT NULL,
+      team_h_score INTEGER,
+      team_a_score INTEGER,
+      winner TEXT,
+      status TEXT NOT NULL DEFAULT 'SCHEDULED',
+      details TEXT,
+      updated_at INTEGER NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS cl_standings (
+      team_id INTEGER PRIMARY KEY,
+      stage TEXT NOT NULL,
+      position INTEGER NOT NULL,
+      team_name TEXT NOT NULL,
+      played INTEGER NOT NULL DEFAULT 0,
+      win INTEGER NOT NULL DEFAULT 0,
+      draw INTEGER NOT NULL DEFAULT 0,
+      loss INTEGER NOT NULL DEFAULT 0,
+      goals_for INTEGER NOT NULL DEFAULT 0,
+      goals_against INTEGER NOT NULL DEFAULT 0,
+      goal_difference INTEGER NOT NULL DEFAULT 0,
+      points INTEGER NOT NULL DEFAULT 0,
+      form TEXT,
+      updated_at INTEGER NOT NULL
+    );
+
     CREATE INDEX IF NOT EXISTS idx_fixtures_kickoff ON fixtures(kickoff_time);
     CREATE INDEX IF NOT EXISTS idx_fixtures_teams ON fixtures(team_h, team_a);
     CREATE INDEX IF NOT EXISTS idx_standings_position ON standings(position);
     CREATE INDEX IF NOT EXISTS idx_players_team ON players(team_id);
     CREATE INDEX IF NOT EXISTS idx_players_position ON players(element_type);
     CREATE INDEX IF NOT EXISTS idx_player_history_player ON player_history(player_id);
+    CREATE INDEX IF NOT EXISTS idx_cl_fixtures_kickoff ON cl_fixtures(kickoff_time);
+    CREATE INDEX IF NOT EXISTS idx_cl_fixtures_teams ON cl_fixtures(team_h, team_a);
+    CREATE INDEX IF NOT EXISTS idx_cl_standings_position ON cl_standings(position);
   `)
 }
 

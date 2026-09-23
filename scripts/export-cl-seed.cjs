@@ -1,11 +1,12 @@
-// 从本地 SQLite 导出 D1 可用的 INSERT SQL
-// 用法: node scripts/export-seed.cjs  (输出到 ./seed.sql)
+// 从本地 SQLite 导出欧冠表(cl_fixtures / cl_standings)为 D1 可用 INSERT SQL
+// 用法: node scripts/export-cl-seed.cjs  (输出到 ./cl-seed.sql)
+// 通过 wrangler d1 execute arsenal-hub-db --remote --file=cl-seed.sql 应用到线上
 const Database = require('better-sqlite3')
 const fs = require('fs')
 const path = require('path')
 
 const SRC = path.join(__dirname, '..', '.data', 'arsenal.db')
-const OUT = path.join(__dirname, '..', 'seed.sql')
+const OUT = path.join(__dirname, '..', 'cl-seed.sql')
 
 const db = new Database(SRC, { readonly: true })
 
@@ -16,9 +17,9 @@ function esc(v) {
   return "'" + String(v).replace(/'/g, "''") + "'"
 }
 
-const TABLES = ['teams', 'standings', 'fixtures', 'players', 'player_history', 'sync_meta', 'cl_fixtures', 'cl_standings']
+const TABLES = ['cl_fixtures', 'cl_standings']
 
-let sql = '-- Arsenal Hub seed generated from local .data/arsenal.db\n'
+let sql = '-- Champions League seed generated from local .data/arsenal.db\n'
 sql += 'PRAGMA foreign_keys = OFF;\n\n'
 
 for (const t of TABLES) {

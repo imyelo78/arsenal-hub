@@ -1,13 +1,15 @@
 import { useDb, dbAll } from '../utils/db'
-import { syncFixtures } from '../utils/sync'
+import { syncFixtures, syncCLFixtures } from '../utils/sync'
 import { ARSENAL_FPL_ID } from '../utils/fpl'
+import { ARSENAL_FD_ID } from '../utils/football-data'
 
 export default defineEventHandler(async (event) => {
   await syncFixtures(event)
+  await syncCLFixtures(event)
 
   const db = useDb(event)
 
-  const rows = await dbAll(db, `
+  const plRows = await dbAll(db, `
     SELECT
       f.id, f.kickoff_time, f.event, f.team_h, f.team_a,
       f.team_h_score, f.team_a_score, f.finished, f.started, f.minutes, f.stats,
@@ -20,7 +22,7 @@ export default defineEventHandler(async (event) => {
     ORDER BY f.kickoff_time ASC
   `, [ARSENAL_FPL_ID, ARSENAL_FPL_ID])
 
-  const response = rows.map((r: any) => ({
+  const response = plRows.map((r: any) => ({
     fixture: {
       id: r.id,
       date: r.kickoff_time,
@@ -46,6 +48,53 @@ export default defineEventHandler(async (event) => {
     },
     status: r.finished ? 'FT' : r.started ? 'LIVE' : 'NS'
   }))
+
+  const clRows = await dbAll(db, `
+    SELECT id, kickoff_time, stage, group_name, matchday,
+           team_h, team_h_name, team_a, team_a_name,
+           team_h_score, team_a_score, winner, status, details
+    FROM cl_fixtures
+    WHERE team_h = ? OR team_a = ?
+    ORDER BY kickoff_time ASC
+  `, [ARSENAL_FD_ID, ARSENAL_FD_ID])
+
+  for (const r of clRows) {
+    const isHome = r.team_h === ARSENAL_FD_ID
+    let venue = null
+    if (r.details) {
+      try {
+        const d = JSON.parse(r.details)
+        if (d.venue) venue = { name: d.venue }
+      } catch {}
+    }
+    response.push({
+      fixture: {
+        id: `cl-${r.id}`,
+        date: r.kickoff_time,
+        venue,
+        status: { short: r.status, elapsed: r.status === 'FT' ? 90 : 0 }
+      },
+      league: {
+        id: 2001,
+        name: 'Champions League',
+        logo: null,
+        round: r.stage
+      },
+      teams: {
+        home: { id: r.team_h, name: r.team_h_name, logo: null },
+        away: { id: r.team_a, name: r.team_a_name, logo: null }
+      },
+      goals: {
+        home: r.status === 'FT' || r.team_h_score !== null ? r.team_h_score : null,
+        away: r.status === 'FT' || r.team_a_score !== null ? r.team_a_score : null
+      },
+      status: r.status
+    })
+  }
+
+  response.sort((a: any, b: any) => {
+    return String(a.fixture.date).localeCompare(String(b.fixture.date))
+  })
 
   return { response, source: 'db' }
 })

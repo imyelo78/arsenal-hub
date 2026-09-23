@@ -7,6 +7,14 @@ const fixtures = computed(() => data.value?.response || [])
 const leagueFilter = ref('all')
 const statusFilter = ref<'all' | 'upcoming' | 'finished'>('all')
 
+const leagueDisplay = (name: string) => {
+  const map: Record<string, string> = {
+    'Premier League': t('fixtures.premierLeague'),
+    'Champions League': t('fixtures.championsLeague')
+  }
+  return map[name] || name
+}
+
 const leagues = computed(() => {
   const set = new Set<string>()
   fixtures.value.forEach((f: any) => {
@@ -70,7 +78,7 @@ const filteredFixtures = computed(() => {
       >
         <option value="all">{{ t('fixtures.all') }}</option>
         <option v-for="league in leagues" :key="league" :value="league">
-          {{ league }}
+          {{ leagueDisplay(league) }}
         </option>
       </select>
     </div>

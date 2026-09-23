@@ -12,12 +12,21 @@ import {
   getFplTeamBadge,
   ARSENAL_FPL_ID
 } from './fpl'
+import {
+  getFdTeamMatches,
+  getFdClStandings,
+  getFdMatchDetail,
+  mapFdMatchToRow,
+  ARSENAL_FD_ID
+} from './football-data'
 
 export const SYNC_INTERVALS = {
   teams: 30 * 24 * 60 * 60 * 1000,
   fixtures: 60 * 60 * 1000,
   standings: 30 * 60 * 1000,
-  players: 7 * 24 * 60 * 60 * 1000
+  players: 7 * 24 * 60 * 60 * 1000,
+  cl_fixtures: 12 * 60 * 60 * 1000,
+  cl_standings: 12 * 60 * 60 * 1000
 }
 
 async function shouldSync(db: any, key: string, interval: number): Promise<boolean> {
@@ -282,15 +291,166 @@ export async function syncPlayers(event?: any, force = false): Promise<number> {
   return bootstrap.elements.length
 }
 
+// ===== Champions League =====
+export async function syncCLFixtures(event?: any, force = false): Promise<number> {
+  const db = useDb(event)
+  if (!force && !(await shouldSync(db, 'cl_fixtures', SYNC_INTERVALS.cl_fixtures))) {
+    return 0
+  }
+
+  let matches: any[]
+  try {
+    matches = await getFdTeamMatches(ARSENAL_FD_ID)
+  } catch (e) {
+    // football-data 不可用(未配置 key / 达到每日配额)时静默保留已有数据
+    console.error('syncCLFixtures: fetch failed', e)
+    return 0
+  }
+  if (!matches.length) return 0
+
+  // 只保留欧冠,排除英超及国内杯赛
+  const clMatches = matches.filter((m: any) => m.competition?.code === 'CL')
+  if (!clMatches.length) return 0
+
+  const now = Date.now()
+  const seen = new Set<number>()
+  const batch: any[] = []
+  for (const m of clMatches) {
+    const row = mapFdMatchToRow(m, now)
+    seen.add(row.id)
+    batch.push(row)
+  }
+
+  // 已完赛且库中尚无详情(缺裁判/半场比分)的比赛,顺带补详情
+  // 免费档每天10次,欧冠已完赛场次有限;先读库判断避免重复拉取
+  for (const r of batch) {
+    if (r.status !== 'FT') continue
+    const existing = await dbGet(db, 'SELECT details FROM cl_fixtures WHERE id = ?', [r.id])
+    let hasDetail = false
+    if (existing?.details) {
+      try {
+        const d = JSON.parse(existing.details)
+        hasDetail = !!d.referees?.length && (d.halfTime !== null)
+      } catch {}
+    }
+    if (hasDetail) continue
+    try {
+      const detail = await getFdMatchDetail(r.id)
+      if (detail) {
+        r.details = JSON.stringify({
+          venue: detail.venue || null,
+          attendance: typeof detail.attendance === 'number' ? detail.attendance : null,
+          referees: Array.isArray(detail.referees) ? detail.referees.map((x: any) => x.name) : [],
+          halfTime: detail.score?.halfTime || null,
+          fullTime: detail.score?.fullTime || null
+        })
+      }
+    } catch {}
+  }
+
+  for (const r of batch) {
+    await dbRun(db, `
+      INSERT INTO cl_fixtures (
+        id, kickoff_time, stage, group_name, matchday,
+        team_h, team_h_name, team_a, team_a_name,
+        team_h_score, team_a_score, winner, status, details, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(id) DO UPDATE SET
+        kickoff_time = excluded.kickoff_time,
+        stage = excluded.stage,
+        group_name = excluded.group_name,
+        matchday = excluded.matchday,
+        team_h = excluded.team_h,
+        team_h_name = excluded.team_h_name,
+        team_a = excluded.team_a,
+        team_a_name = excluded.team_a_name,
+        team_h_score = excluded.team_h_score,
+        team_a_score = excluded.team_a_score,
+        winner = excluded.winner,
+        status = excluded.status,
+        details = excluded.details,
+        updated_at = excluded.updated_at
+    `, [
+      r.id, r.kickoff_time, r.stage, r.group_name, r.matchday,
+      r.team_h, r.team_h_name, r.team_a, r.team_a_name,
+      r.team_h_score, r.team_a_score, r.winner, r.status, r.details, now
+    ])
+  }
+
+  // 移除已不在当前赛程里的历史场次 (欧冠已过去的淘汰赛阶段 或 上赛季残留)
+  if (seen.size) {
+    const ids = Array.from(seen)
+    const placeholders = ids.map(() => '?').join(',')
+    await dbRun(db, `DELETE FROM cl_fixtures WHERE id NOT IN (${placeholders})`, ids)
+  }
+
+  await updateSyncTime(db, 'cl_fixtures')
+  return batch.length
+}
+
+export async function syncCLStandings(event?: any, force = false): Promise<number> {
+  const db = useDb(event)
+  await syncCLFixtures(event, force)
+
+  if (!force && !(await shouldSync(db, 'cl_standings', SYNC_INTERVALS.cl_standings))) {
+    return 0
+  }
+
+  let standings: any[]
+  try {
+    standings = await getFdClStandings()
+  } catch (e) {
+    console.error('syncCLStandings: fetch failed', e)
+    return 0
+  }
+  const table = standings[0]?.table || []
+  if (!table.length) return 0
+
+  const now = Date.now()
+  const stage = standings[0]?.stage
+  for (const row of table) {
+    await dbRun(db, `
+      INSERT INTO cl_standings (
+        team_id, stage, position, team_name, played, win, draw, loss,
+        goals_for, goals_against, goal_difference, points, form, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ON CONFLICT(team_id) DO UPDATE SET
+        stage = excluded.stage,
+        position = excluded.position,
+        team_name = excluded.team_name,
+        played = excluded.played,
+        win = excluded.win,
+        draw = excluded.draw,
+        loss = excluded.loss,
+        goals_for = excluded.goals_for,
+        goals_against = excluded.goals_against,
+        goal_difference = excluded.goal_difference,
+        points = excluded.points,
+        form = excluded.form,
+        updated_at = excluded.updated_at
+    `, [
+      row.team.id, stage, row.position, row.team.name,
+      row.playedGames || 0, row.won || 0, row.draw || 0, row.lost || 0,
+      row.goalsFor || 0, row.goalsAgainst || 0, row.goalDifference || 0,
+      row.points || 0, row.form || '', now
+    ])
+  }
+
+  await updateSyncTime(db, 'cl_standings')
+  return table.length
+}
+
 // ===== Full sync =====
 export async function syncAll(event?: any, force = false): Promise<any> {
-  const [teams, fixtures] = await Promise.all([
+  const [teams, fixtures, cl] = await Promise.all([
     syncTeams(event, force),
-    syncFixtures(event, force)
+    syncFixtures(event, force),
+    syncCLFixtures(event, force)
   ])
   const [standings, players] = await Promise.all([
     syncStandings(event, force),
     syncPlayers(event, force)
   ])
-  return { teams, fixtures, standings, players }
+  const clStandings = await syncCLStandings(event, force)
+  return { teams, fixtures, standings, players, clFixtures: cl, clStandings }
 }

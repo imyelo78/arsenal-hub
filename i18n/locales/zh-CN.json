@@ -64,7 +64,9 @@
     "saves": "扑救",
     "yellowCards": "黄牌",
     "bonus": "全场最佳",
-    "backToList": "返回赛程"
+    "backToList": "返回赛程",
+    "halfTime": "半场",
+    "referee": "主裁判"
   },
   "standings": {
     "title": "英超积分榜",
@@ -74,7 +76,12 @@
     "form": "近5轮",
     "championsLeague": "欧冠区",
     "europaLeague": "欧联区",
-    "relegation": "降级区"
+    "relegation": "降级区",
+    "pl": "英超",
+    "cl": "欧冠",
+    "clTitle": "欧冠积分榜",
+    "clSubtitle": "2026-27 欧冠联赛阶段排名",
+    "leaguePhase": "联赛阶段"
   },
   "squad": {
     "title": "一线队",

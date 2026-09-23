@@ -32,5 +32,6 @@ download-photos.mjs
 seed.sql
 arsenal-data.sql
 d1-import.sql
+cl-seed.sql
 export-d1.cjs
 export-db.cjs

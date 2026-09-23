@@ -109,6 +109,10 @@ const matchDateLabel = computed(() => {
 const matchdayLabel = computed(() => {
   const round = nextMatch.value?.league?.round || nextMatch.value?.fixture?.round
   if (!round) return ''
+  if (nextMatch.value?.league?.id === 2001) {
+    if (round === 'LEAGUE_STAGE') return locale.value === 'zh' ? '欧冠·联赛阶段' : 'UCL · League Stage'
+    return `${locale.value === 'zh' ? '欧冠' : 'UCL'} · ${String(round).replace(/_/g, ' ')}`
+  }
   if (typeof round === 'string' && round.startsWith('Regular Season - ')) {
     const n = round.replace('Regular Season - ', '')
     return locale.value === 'zh' ? `第${n}轮` : `GW ${n}`

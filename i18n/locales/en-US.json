@@ -64,7 +64,9 @@
     "saves": "Saves",
     "yellowCards": "Yellows",
     "bonus": "Bonus",
-    "backToList": "Back to Fixtures"
+    "backToList": "Back to Fixtures",
+    "halfTime": "HT",
+    "referee": "Referee"
   },
   "standings": {
     "title": "Premier League Table",
@@ -74,7 +76,12 @@
     "form": "Last 5",
     "championsLeague": "Champions League",
     "europaLeague": "Europa League",
-    "relegation": "Relegation"
+    "relegation": "Relegation",
+    "pl": "Premier League",
+    "cl": "Champions League",
+    "clTitle": "Champions League Table",
+    "clSubtitle": "2026-27 League Phase Standings",
+    "leaguePhase": "League Phase"
   },
   "squad": {
     "title": "First Team",

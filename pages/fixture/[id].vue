@@ -31,6 +31,15 @@ const isFinished = computed(() => {
   return ['FT', 'AET', 'PEN'].includes(s)
 })
 
+const isCl = computed(() => match.value?.league?.id === 2001)
+
+const matchStageLabel = computed(() => {
+  const stage = match.value?.fixture?.stage
+  if (!stage) return ''
+  if (stage === 'LEAGUE_STAGE') return locale.value === 'zh' ? '联赛阶段' : 'League Stage'
+  return stage.replace(/_/g, ' ')
+})
+
 const result = computed(() => {
   if (!isFinished.value || !match.value?.goals) return null
   const arsenalGoals = isArsenalHome.value
@@ -47,6 +56,10 @@ const result = computed(() => {
 const roundLabel = computed(() => {
   const round = match.value?.league?.round || match.value?.fixture?.round
   if (!round) return ''
+  if (match.value?.league?.id === 2001) {
+    if (round === 'LEAGUE_STAGE') return locale.value === 'zh' ? '联赛阶段' : 'League Stage'
+    return String(round).replace(/_/g, ' ')
+  }
   if (typeof round === 'string' && round.startsWith('Regular Season - ')) {
     return locale.value === 'zh' ? `第${round.replace('Regular Season - ', '')}轮` : `GW ${round.replace('Regular Season - ', '')}`
   }
@@ -122,6 +135,7 @@ const matchStatusLabel = computed(() => {
             {{ result === 'win' ? (locale === 'zh' ? '胜' : 'W') : result === 'loss' ? (locale === 'zh' ? '负' : 'L') : (locale === 'zh' ? '平' : 'D') }}
           </span>
           <span class="text-xs text-arsenal-muted">{{ match.league?.name }}</span>
+          <span v-if="isCl && matchStageLabel" class="text-xs text-arsenal-subtle">· {{ matchStageLabel }}</span>
           <span v-if="match.league?.round" class="text-xs text-arsenal-subtle">· {{ roundLabel }}</span>
         </div>
 
@@ -151,6 +165,12 @@ const matchStatusLabel = computed(() => {
             </div>
             <div class="text-xs text-arsenal-subtle mt-2">
               {{ matchStatusLabel }}
+            </div>
+            <div
+              v-if="isFinished && isCl && match.fixture?.halfTime && (match.fixture.halfTime.home !== null || match.fixture.halfTime.away !== null)"
+              class="text-xs text-arsenal-subtle mt-1"
+            >
+              {{ t('fixture.halfTime') }} {{ match.fixture.halfTime.home ?? '-' }} - {{ match.fixture.halfTime.away ?? '-' }}
             </div>
           </div>
 
@@ -183,6 +203,12 @@ const matchStatusLabel = computed(() => {
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
             <span>{{ match.fixture.venue.name }}</span>
+          </div>
+          <div v-if="match.fixture?.referee" class="flex items-center gap-1.5">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{{ t('fixture.referee') }}: {{ match.fixture.referee }}</span>
           </div>
         </div>
       </div>
