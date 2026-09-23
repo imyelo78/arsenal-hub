@@ -207,9 +207,9 @@ export async function syncPlayers(event?: any, force = false): Promise<number> {
       ON CONFLICT(id) DO UPDATE SET
         team_id = excluded.team_id, first_name = excluded.first_name,
         second_name = excluded.second_name, web_name = excluded.web_name,
-        element_type = excluded.element_type, squad_number = excluded.squad_number,
-        photo_url = excluded.photo_url, nationality = excluded.nationality,
-        age = excluded.age, news = excluded.news,
+        element_type = excluded.element_type,
+        photo_url = excluded.photo_url,
+        news = excluded.news,
         appearances = excluded.appearances, starts = excluded.starts,
         minutes = excluded.minutes, goals_scored = excluded.goals_scored,
         assists = excluded.assists, clean_sheets = excluded.clean_sheets,

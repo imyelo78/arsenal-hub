@@ -27,3 +27,10 @@ npm-debug.log*
 
 # Temp scripts
 download-photos.mjs
+
+# Local DB export artifacts (keep local, don't push)
+seed.sql
+arsenal-data.sql
+d1-import.sql
+export-d1.cjs
+export-db.cjs

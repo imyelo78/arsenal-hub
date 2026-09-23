@@ -134,6 +134,7 @@ function initSchema(db: any) {
       photo_url TEXT,
       nationality TEXT,
       age INTEGER,
+      is_current INTEGER DEFAULT 1,
       news TEXT,
       appearances INTEGER DEFAULT 0,
       starts INTEGER DEFAULT 0,

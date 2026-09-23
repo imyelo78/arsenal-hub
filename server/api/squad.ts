@@ -2,15 +2,11 @@ import { useDb, dbAll } from '../utils/db'
 import { syncPlayers } from '../utils/sync'
 import { ARSENAL_FPL_ID, FPL_POSITIONS } from '../utils/fpl'
 
-function resolvePhoto(photoUrl: string | null, localPhotos: Set<string>): string | null {
+function resolvePhoto(photoUrl: string | null): string | null {
   if (!photoUrl) return null
   const match = photoUrl.match(/p(\d+)\.png/)
   if (!match) return photoUrl
-  const filename = `p${match[1]}.png`
-  if (localPhotos.has(filename)) {
-    return `/images/players/${filename}`
-  }
-  return photoUrl
+  return `/images/players/p${match[1]}.png`
 }
 
 export default defineEventHandler(async (event) => {
@@ -18,27 +14,9 @@ export default defineEventHandler(async (event) => {
 
   const db = useDb(event)
 
-  // In production (D1), we can't check local filesystem the same way
-  // So we try to list files at build time, or just use the URL
-  let localPhotos = new Set<string>()
-  try {
-    const fs = await import('node:fs')
-    const path = await import('node:path')
-    const PLAYERS_DIR = path.join(process.cwd(), 'public', 'images', 'players')
-    if (fs.existsSync(PLAYERS_DIR)) {
-      fs.readdirSync(PLAYERS_DIR).forEach((f: string) => {
-        if (f.endsWith('.png') && fs.statSync(path.join(PLAYERS_DIR, f)).size > 1000) {
-          localPhotos.add(f)
-        }
-      })
-    }
-  } catch {
-    // On Cloudflare, fs is not available - photos served from public/ are already deployed
-  }
-
   const rows = await dbAll(db, `
     SELECT * FROM players
-    WHERE team_id = ?
+    WHERE team_id = ? AND is_current = 1
     ORDER BY element_type ASC, second_name ASC
   `, [ARSENAL_FPL_ID])
 
@@ -53,7 +31,7 @@ export default defineEventHandler(async (event) => {
       number: p.squad_number,
       position: pos.key,
       positionShort: pos.short,
-      photo: resolvePhoto(p.photo_url, localPhotos),
+      photo: resolvePhoto(p.photo_url),
       nationality: p.nationality,
       age: p.age,
       stats: {

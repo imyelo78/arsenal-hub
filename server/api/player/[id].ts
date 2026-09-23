@@ -1,16 +1,12 @@
-import { useDb, dbGet, dbAll } from '../../utils/db'
+import { useDb, dbAll, dbGet } from '../../utils/db'
 import { syncPlayers, syncFixtures } from '../../utils/sync'
 import { FPL_POSITIONS } from '../../utils/fpl'
 
-function resolvePhoto(photoUrl: string | null, localPhotos: Set<string>): string | null {
+function resolvePhoto(photoUrl: string | null): string | null {
   if (!photoUrl) return null
   const match = photoUrl.match(/p(\d+)\.png/)
   if (!match) return photoUrl
-  const filename = `p${match[1]}.png`
-  if (localPhotos.has(filename)) {
-    return `/images/players/${filename}`
-  }
-  return photoUrl
+  return `/images/players/p${match[1]}.png`
 }
 
 export default defineEventHandler(async (event) => {
@@ -23,21 +19,6 @@ export default defineEventHandler(async (event) => {
   await syncFixtures(event)
 
   const db = useDb(event)
-
-  // Check local photos (dev only)
-  let localPhotos = new Set<string>()
-  try {
-    const fs = await import('node:fs')
-    const path = await import('node:path')
-    const PLAYERS_DIR = path.join(process.cwd(), 'public', 'images', 'players')
-    if (fs.existsSync(PLAYERS_DIR)) {
-      fs.readdirSync(PLAYERS_DIR).forEach((f: string) => {
-        if (f.endsWith('.png') && fs.statSync(path.join(PLAYERS_DIR, f)).size > 1000) {
-          localPhotos.add(f)
-        }
-      })
-    }
-  } catch {}
 
   const player = await dbGet(db, 'SELECT * FROM players WHERE id = ?', [id])
 
@@ -80,10 +61,11 @@ export default defineEventHandler(async (event) => {
     number: player.squad_number,
     position: pos.key,
     positionShort: pos.short,
-    photo: resolvePhoto(player.photo_url, localPhotos),
+    photo: resolvePhoto(player.photo_url),
     nationality: player.nationality,
     age: player.age,
     news: player.news || '',
+    isCurrent: player.is_current !== undefined ? player.is_current : 1,
     stats: {
       appearances: player.appearances || 0,
       starts: player.starts || 0,
@@ -99,7 +81,7 @@ export default defineEventHandler(async (event) => {
       form: player.form || '0',
       totalPoints: player.total_points || 0,
       pointsPerGame: player.points_per_game || '0',
-      nowCost: player.now_cost ? (p.now_cost / 10).toFixed(1) : '0',
+      nowCost: player.now_cost ? (player.now_cost / 10).toFixed(1) : '0',
       selectedBy: player.selected_by_percent || '0',
       influence: player.influence || '0',
       creativity: player.creativity || '0',

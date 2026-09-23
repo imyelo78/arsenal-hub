@@ -11,6 +11,7 @@ const db = new Database(SRC, { readonly: true })
 
 function esc(v) {
   if (v === null || v === undefined) return 'NULL'
+  if (Buffer.isBuffer(v)) return "X'" + v.toString('hex') + "'"
   if (typeof v === 'number') return String(v)
   return "'" + String(v).replace(/'/g, "''") + "'"
 }
@@ -29,7 +30,7 @@ for (const t of TABLES) {
     const colList = cols.map(c => '"' + c + '"').join(', ')
     for (const r of rows) {
       const vals = cols.map(c => esc(r[c])).join(', ')
-      sql += 'INSERT INTO "' + t + '" (' + colList + ') VALUES (' + vals + ');\n'
+      sql += 'INSERT OR REPLACE INTO "' + t + '" (' + colList + ') VALUES (' + vals + ');\n'
     }
   }
   sql += '\n'
