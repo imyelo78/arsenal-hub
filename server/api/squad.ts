@@ -6,7 +6,7 @@ function resolvePhoto(photoUrl: string | null): string | null {
   if (!photoUrl) return null
   const match = photoUrl.match(/p(\d+)\.png/)
   if (!match) return photoUrl
-  return `/images/players/p${match[1]}.png`
+  return `/images/players/p${match[1]}.webp`
 }
 
 export default defineEventHandler(async (event) => {
