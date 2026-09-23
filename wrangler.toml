@@ -2,7 +2,7 @@ name = "arsenal-hub"
 compatibility_date = "2026-09-21"
 
 # Cloudflare Pages 项目配置（Pages 配置不允许 main 字段）
-pages_build_output_dir = ".output/public"
+pages_build_output_dir = "dist"
 
 # D1 数据库绑定
 # 变量名必须是 DB（server/utils/db.ts 里用的是 event.context.cloudflare.env.DB）
