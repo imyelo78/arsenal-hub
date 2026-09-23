@@ -13,12 +13,12 @@ const recentResults = computed(() => lastResultsData.value?.results || [])
 // ===== Banner carousel =====
 const banners = [
   {
-    image: 'https://images.pexels.com/photos/9251066/pexels-photo-9251066.jpeg?_gl=1*1qzxbk0*_ga*MTg2OTM2MjQuMTc1ODcwMTA5Mg..*_ga_8JE65Q40S6*czE3OTAwNDA3NjgkbzUkZzEkdDE3OTAwNDA5OTAkajU5JGwwJGgw',
+    image: '/images/banner1.webp',
     title: 'Arsenal',
     subtitle: 'Premier League 2024/25'
   },
   {
-    image: 'https://images.pexels.com/photos/28517861/pexels-photo-28517861.jpeg?_gl=1*ibk6kh*_ga*MTg2OTM2MjQuMTc1ODcwMTA5Mg..*_ga_8JE65Q40S6*czE3OTAwNDA3NjgkbzUkZzEkdDE3OTAwNDEwMjEkajI4JGwwJGgw',
+    image: '/images/banner2.webp',
     title: 'Emirates Stadium',
     subtitle: 'Home of the Gunners'
   }
