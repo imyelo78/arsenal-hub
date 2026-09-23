@@ -9,5 +9,5 @@ pages_build_output_dir = ".output/public"
 # 创建后把 database_id 替换成 wrangler d1 create 返回的真实 UUID
 [[d1_databases]]
 binding = "DB"
-database_name = "arsenal-hub"
+database_name = "arsenal-hub-db"
 database_id = "99189de0-a8e9-4731-9c5c-f05b727f11eb"
