@@ -77,21 +77,23 @@ const posKeys = computed(() => Object.keys(positionGroups.value))
               >
                 <div class="flex flex-col items-center text-center">
                   <!-- Photo -->
-                  <div class="relative w-20 h-20 rounded-full bg-arsenal-surface overflow-hidden mb-3 ring-2 ring-white">
-                    <img
-                      v-if="player.photo"
-                      :src="player.photo"
-                      :alt="player.fullName"
-                      class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      loading="lazy"
-                    />
-                    <div v-else class="w-full h-full flex items-center justify-center text-arsenal-subtle text-xl font-medium">
-                      {{ player.webName?.charAt(0) }}
+                  <div class="relative w-20 h-20 mx-auto mb-3">
+                    <div class="w-20 h-20 rounded-full bg-arsenal-surface overflow-hidden ring-2 ring-white">
+                      <img
+                        v-if="player.photo"
+                        :src="player.photo"
+                        :alt="player.fullName"
+                        class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                      <div v-else class="w-full h-full flex items-center justify-center text-arsenal-subtle text-xl font-medium">
+                        {{ player.webName?.charAt(0) }}
+                      </div>
                     </div>
-                    <!-- Number badge -->
+                    <!-- Number badge (outside the circle) -->
                     <div
                       v-if="player.number"
-                      class="absolute -bottom-0.5 -right-0.5 w-6 h-6 rounded-full bg-arsenal-red text-white text-xs font-bold flex items-center justify-center tabular ring-2 ring-white"
+                      class="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-arsenal-red text-white text-xs font-bold flex items-center justify-center tabular ring-2 ring-white"
                     >
                       {{ player.number }}
                     </div>
