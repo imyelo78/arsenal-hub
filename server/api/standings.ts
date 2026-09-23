@@ -1,12 +1,12 @@
-import { getDb, dbAll } from '../utils/db'
+import { useDb, dbAll } from '../utils/db'
 import { syncStandings } from '../utils/sync'
 
-export default defineEventHandler(async () => {
-  await syncStandings()
+export default defineEventHandler(async (event) => {
+  await syncStandings(event)
 
-  const db = getDb()
+  const db = useDb(event)
 
-  const rows = dbAll(db, `
+  const rows = await dbAll(db, `
     SELECT
       s.position, s.points, s.played, s.win, s.draw, s.loss,
       s.goals_for, s.goals_against, s.goal_difference, s.form,

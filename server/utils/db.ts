@@ -1,14 +1,17 @@
 // Database abstraction layer
 // Dev: better-sqlite3 (local file)
-// Production: Cloudflare D1
+// Production: Cloudflare D1 (via event.context.cloudflare.env.DB)
 
 let dbInstance: any = null
 
-function getDb(): any {
+function isCloudflarePages(): boolean {
+  return !!(globalThis as any).cf_pages || process.env.CF_PAGES === '1'
+}
+
+function getLocalDb(): any {
   if (dbInstance) return dbInstance
 
-  // Dynamic import to avoid bundling better-sqlite3 in production
-  const { default: Database } = require('better-sqlite3')
+  const Database = require('better-sqlite3')
   const fs = require('node:fs')
   const path = require('node:path')
 
@@ -22,6 +25,52 @@ function getDb(): any {
   dbInstance.pragma('foreign_keys = ON')
   initSchema(dbInstance)
   return dbInstance
+}
+
+// In production, D1 is accessed via event.context.cloudflare.env.DB
+// We need to pass the event to useDb
+export function useDb(event?: any): any {
+  // Cloudflare Pages: use D1 binding
+  if (event?.context?.cloudflare?.env?.DB) {
+    return event.context.cloudflare.env.DB
+  }
+  // Local dev: use better-sqlite3
+  return getLocalDb()
+}
+
+// D1 uses .bind() and .all() / .first() / .run() instead of .prepare().all()
+// We need wrapper functions that work with both
+
+export async function dbAll(db: any, sql: string, params: any[] = []): Promise<any[]> {
+  // D1 (async)
+  if (db.bind) {
+    const stmt = db.prepare(sql).bind(...params)
+    const result = await stmt.all()
+    return result.results || []
+  }
+  // better-sqlite3 (sync)
+  return db.prepare(sql).all(...params)
+}
+
+export async function dbGet(db: any, sql: string, params: any[] = []): Promise<any | null> {
+  // D1 (async)
+  if (db.bind) {
+    const stmt = db.prepare(sql).bind(...params)
+    const result = await stmt.first()
+    return result || null
+  }
+  // better-sqlite3 (sync)
+  return db.prepare(sql).get(...params) || null
+}
+
+export async function dbRun(db: any, sql: string, params: any[] = []): Promise<any> {
+  // D1 (async)
+  if (db.bind) {
+    const stmt = db.prepare(sql).bind(...params)
+    return await stmt.run()
+  }
+  // better-sqlite3 (sync)
+  return db.prepare(sql).run(...params)
 }
 
 function initSchema(db: any) {
@@ -133,22 +182,4 @@ function initSchema(db: any) {
   `)
 }
 
-// Helper: get DB instance
-export function useDb(event?: any): any {
-  return getDb()
-}
-
-// Query helpers
-export function dbAll(db: any, sql: string, params: any[] = []): any[] {
-  return db.prepare(sql).all(...params)
-}
-
-export function dbGet(db: any, sql: string, params: any[] = []): any | null {
-  return db.prepare(sql).get(...params) || null
-}
-
-export function dbRun(db: any, sql: string, params: any[] = []): any {
-  return db.prepare(sql).run(...params)
-}
-
-export { getDb }
+export { getLocalDb as getDb }

@@ -1,18 +1,13 @@
-import { getDb, dbGet, dbAll } from '../../utils/db'
+import { useDb, dbGet, dbAll } from '../../utils/db'
 import { syncPlayers, syncFixtures } from '../../utils/sync'
 import { FPL_POSITIONS } from '../../utils/fpl'
-import fs from 'node:fs'
-import path from 'node:path'
 
-const PLAYERS_DIR = path.join(process.cwd(), 'public', 'images', 'players')
-
-function resolvePhoto(photoUrl: string | null): string | null {
+function resolvePhoto(photoUrl: string | null, localPhotos: Set<string>): string | null {
   if (!photoUrl) return null
   const match = photoUrl.match(/p(\d+)\.png/)
   if (!match) return photoUrl
   const filename = `p${match[1]}.png`
-  const localPath = path.join(PLAYERS_DIR, filename)
-  if (fs.existsSync(localPath) && fs.statSync(localPath).size > 1000) {
+  if (localPhotos.has(filename)) {
     return `/images/players/${filename}`
   }
   return photoUrl
@@ -24,15 +19,27 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Missing player id' })
   }
 
-  // Ensure players are synced (will skip if fresh - 7 day TTL)
-  await syncPlayers()
-  // Also ensure fixtures/teams are available for history lookups
-  await syncFixtures()
+  await syncPlayers(event)
+  await syncFixtures(event)
 
-  const db = getDb()
+  const db = useDb(event)
 
-  // Get player basic info
-  const player = dbGet(db, 'SELECT * FROM players WHERE id = ?', [id])
+  // Check local photos (dev only)
+  let localPhotos = new Set<string>()
+  try {
+    const fs = await import('node:fs')
+    const path = await import('node:path')
+    const PLAYERS_DIR = path.join(process.cwd(), 'public', 'images', 'players')
+    if (fs.existsSync(PLAYERS_DIR)) {
+      fs.readdirSync(PLAYERS_DIR).forEach((f: string) => {
+        if (f.endsWith('.png') && fs.statSync(path.join(PLAYERS_DIR, f)).size > 1000) {
+          localPhotos.add(f)
+        }
+      })
+    }
+  } catch {}
+
+  const player = await dbGet(db, 'SELECT * FROM players WHERE id = ?', [id])
 
   if (!player) {
     throw createError({ statusCode: 404, statusMessage: 'Player not found' })
@@ -40,8 +47,7 @@ export default defineEventHandler(async (event) => {
 
   const pos = FPL_POSITIONS[player.element_type] || { key: 'UNK', short: 'UNK' }
 
-  // Get player history (last 5 matches) with team info from teams table
-  const historyRows = dbAll(db, `
+  const historyRows = await dbAll(db, `
     SELECT ph.*, t.name as opponent_name, t.badge_url as opponent_logo
     FROM player_history ph
     JOIN teams t ON ph.opponent_team = t.id
@@ -74,7 +80,7 @@ export default defineEventHandler(async (event) => {
     number: player.squad_number,
     position: pos.key,
     positionShort: pos.short,
-    photo: resolvePhoto(player.photo_url),
+    photo: resolvePhoto(player.photo_url, localPhotos),
     nationality: player.nationality,
     age: player.age,
     news: player.news || '',
@@ -93,7 +99,7 @@ export default defineEventHandler(async (event) => {
       form: player.form || '0',
       totalPoints: player.total_points || 0,
       pointsPerGame: player.points_per_game || '0',
-      nowCost: player.now_cost ? (player.now_cost / 10).toFixed(1) : '0',
+      nowCost: player.now_cost ? (p.now_cost / 10).toFixed(1) : '0',
       selectedBy: player.selected_by_percent || '0',
       influence: player.influence || '0',
       creativity: player.creativity || '0',

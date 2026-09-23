@@ -1,13 +1,13 @@
-import { getDb, dbGet } from '../utils/db'
+import { useDb, dbGet } from '../utils/db'
 import { syncFixtures } from '../utils/sync'
 import { ARSENAL_FPL_ID } from '../utils/fpl'
 
-export default defineEventHandler(async () => {
-  await syncFixtures()
+export default defineEventHandler(async (event) => {
+  await syncFixtures(event)
 
-  const db = getDb()
+  const db = useDb(event)
 
-  const row = dbGet(db, `
+  const row = await dbGet(db, `
     SELECT
       f.id, f.kickoff_time, f.event, f.team_h, f.team_a,
       f.team_h_score, f.team_a_score, f.finished, f.started, f.minutes,

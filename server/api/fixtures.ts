@@ -1,15 +1,13 @@
-import { getDb, dbAll } from '../utils/db'
+import { useDb, dbAll } from '../utils/db'
 import { syncFixtures } from '../utils/sync'
 import { ARSENAL_FPL_ID } from '../utils/fpl'
 
 export default defineEventHandler(async (event) => {
-  // Ensure data is synced (will skip if fresh)
-  await syncFixtures()
+  await syncFixtures(event)
 
-  const db = getDb()
+  const db = useDb(event)
 
-  // Get all Arsenal fixtures
-  const rows = dbAll(db, `
+  const rows = await dbAll(db, `
     SELECT
       f.id, f.kickoff_time, f.event, f.team_h, f.team_a,
       f.team_h_score, f.team_a_score, f.finished, f.started, f.minutes, f.stats,
