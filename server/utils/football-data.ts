@@ -6,6 +6,14 @@ const FOOTBALL_DATA_BASE = 'https://api.football-data.org/v4'
 const ARSENAL_FD_ID = 57
 const CHAMPIONS_LEAGUE_CODE = 'CL'
 
+// 球队 crest 下载至本地静态资源(webp),生产用本地路径,见 scripts/download-crests.cjs
+export function getFdCrestLocal(teamId: number | null | undefined): string | null {
+  if (!teamId) return null
+  return `/images/crests/${teamId}.webp`
+}
+
+export const CL_COMPETITION_LOGO = '/images/crests/CL.webp'
+
 function fdApiKey(): string {
   try {
     const cfg = useRuntimeConfig()
@@ -109,8 +117,8 @@ export function mapFdMatchToRow(m: any, now: number): ClFixtureRow {
     winner: sc.winner || null,
     status: mapStatus(m.status || 'SCHEDULED'),
     details: JSON.stringify(details),
-    home_logo: h.crest || h.tla ? `https://crests.football-data.org/${h.id}.png` : null,
-    away_logo: a.crest || a.tla ? `https://crests.football-data.org/${a.id}.png` : null,
+    home_logo: getFdCrestLocal(h.id),
+    away_logo: getFdCrestLocal(a.id),
     updated_at: now
   }
 }

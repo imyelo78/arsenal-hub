@@ -107,13 +107,13 @@ async function main() {
     }
 
     seen.add(m.id)
+    const crestLocal = (id) => (id ? `/images/crests/${id}.webp` : null)
     upsertFixture.run(
       m.id, m.utcDate, m.stage || null, m.group || null, m.matchday || null,
       h.id, h.name || '', a.id, a.name || '',
       sc.fullTime?.home ?? null, sc.fullTime?.away ?? null, sc.winner || null,
       mapStatus(m.status || 'SCHEDULED'), JSON.stringify(details),
-      h.crest ? `https://crests.football-data.org/${h.id}.png` : null,
-      a.crest ? `https://crests.football-data.org/${a.id}.png` : null,
+      crestLocal(h.id), crestLocal(a.id),
       now
     )
   }
@@ -146,7 +146,7 @@ async function main() {
     for (const r of table.table) {
       upsertStanding.run(
         r.team.id, table.stage, r.position, r.team.name,
-        r.team.crest || (r.team.id ? `https://crests.football-data.org/${r.team.id}.png` : null),
+        r.team.id ? `/images/crests/${r.team.id}.webp` : null,
         r.playedGames || 0, r.won || 0, r.draw || 0, r.lost || 0,
         r.goalsFor || 0, r.goalsAgainst || 0, r.goalDifference || 0,
         r.points || 0, r.form || '', now

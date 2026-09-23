@@ -17,6 +17,7 @@ import {
   getFdClStandings,
   getFdMatchDetail,
   mapFdMatchToRow,
+  getFdCrestLocal,
   ARSENAL_FD_ID
 } from './football-data'
 
@@ -435,7 +436,7 @@ export async function syncCLStandings(event?: any, force = false): Promise<numbe
         updated_at = excluded.updated_at
     `, [
       row.team.id, stage, row.position, row.team.name,
-      row.team.crest || (row.team.id ? `https://crests.football-data.org/${row.team.id}.png` : null),
+      getFdCrestLocal(row.team.id),
       row.playedGames || 0, row.won || 0, row.draw || 0, row.lost || 0,
       row.goalsFor || 0, row.goalsAgainst || 0, row.goalDifference || 0,
       row.points || 0, row.form || '', now

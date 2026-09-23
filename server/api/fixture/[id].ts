@@ -1,6 +1,6 @@
 import { useDb, dbGet } from '../../utils/db'
 import { syncFixtures, syncCLFixtures } from '../../utils/sync'
-import { ARSENAL_FD_ID } from '../../utils/football-data'
+import { ARSENAL_FD_ID, CL_COMPETITION_LOGO } from '../../utils/football-data'
 
 export default defineEventHandler(async (event) => {
   const rawId = getRouterParam(event, 'id')
@@ -59,7 +59,7 @@ export default defineEventHandler(async (event) => {
       league: {
         id: 2001,
         name: 'Champions League',
-        logo: 'https://crests.football-data.org/CL.png',
+        logo: CL_COMPETITION_LOGO,
         round: row.stage
       },
       teams: {
