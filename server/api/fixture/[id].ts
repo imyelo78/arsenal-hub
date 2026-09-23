@@ -18,7 +18,8 @@ export default defineEventHandler(async (event) => {
     const row = await dbGet(db, `
       SELECT id, kickoff_time, stage, group_name, matchday,
              team_h, team_h_name, team_a, team_a_name,
-             team_h_score, team_a_score, winner, status, details
+             team_h_score, team_a_score, winner, status, details,
+             home_logo, away_logo
       FROM cl_fixtures WHERE id = ?
     `, [id])
 
@@ -58,12 +59,12 @@ export default defineEventHandler(async (event) => {
       league: {
         id: 2001,
         name: 'Champions League',
-        logo: null,
+        logo: 'https://crests.football-data.org/CL.png',
         round: row.stage
       },
       teams: {
-        home: { id: row.team_h, name: row.team_h_name, logo: null },
-        away: { id: row.team_a, name: row.team_a_name, logo: null }
+        home: { id: row.team_h, name: row.team_h_name, logo: row.home_logo },
+        away: { id: row.team_a, name: row.team_a_name, logo: row.away_logo }
       },
       goals: {
         home: showScore ? row.team_h_score : null,

@@ -353,8 +353,9 @@ export async function syncCLFixtures(event?: any, force = false): Promise<number
       INSERT INTO cl_fixtures (
         id, kickoff_time, stage, group_name, matchday,
         team_h, team_h_name, team_a, team_a_name,
-        team_h_score, team_a_score, winner, status, details, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        team_h_score, team_a_score, winner, status, details,
+        home_logo, away_logo, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
         kickoff_time = excluded.kickoff_time,
         stage = excluded.stage,
@@ -369,11 +370,14 @@ export async function syncCLFixtures(event?: any, force = false): Promise<number
         winner = excluded.winner,
         status = excluded.status,
         details = excluded.details,
+        home_logo = excluded.home_logo,
+        away_logo = excluded.away_logo,
         updated_at = excluded.updated_at
     `, [
       r.id, r.kickoff_time, r.stage, r.group_name, r.matchday,
       r.team_h, r.team_h_name, r.team_a, r.team_a_name,
-      r.team_h_score, r.team_a_score, r.winner, r.status, r.details, now
+      r.team_h_score, r.team_a_score, r.winner, r.status, r.details,
+      r.home_logo, r.away_logo, now
     ])
   }
 
@@ -411,13 +415,14 @@ export async function syncCLStandings(event?: any, force = false): Promise<numbe
   for (const row of table) {
     await dbRun(db, `
       INSERT INTO cl_standings (
-        team_id, stage, position, team_name, played, win, draw, loss,
+        team_id, stage, position, team_name, logo, played, win, draw, loss,
         goals_for, goals_against, goal_difference, points, form, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(team_id) DO UPDATE SET
         stage = excluded.stage,
         position = excluded.position,
         team_name = excluded.team_name,
+        logo = excluded.logo,
         played = excluded.played,
         win = excluded.win,
         draw = excluded.draw,
@@ -430,6 +435,7 @@ export async function syncCLStandings(event?: any, force = false): Promise<numbe
         updated_at = excluded.updated_at
     `, [
       row.team.id, stage, row.position, row.team.name,
+      row.team.crest || (row.team.id ? `https://crests.football-data.org/${row.team.id}.png` : null),
       row.playedGames || 0, row.won || 0, row.draw || 0, row.lost || 0,
       row.goalsFor || 0, row.goalsAgainst || 0, row.goalDifference || 0,
       row.points || 0, row.form || '', now

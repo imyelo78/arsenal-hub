@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   if (competition === 'cl') {
     await syncCLStandings(event)
     const rows = await dbAll(db, `
-      SELECT team_id, stage, position, team_name,
+      SELECT team_id, stage, position, team_name, logo,
              played, win, draw, loss,
              goals_for, goals_against, goal_difference, points, form
       FROM cl_standings
@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
       team: {
         id: r.team_id,
         name: r.team_name,
-        logo: null
+        logo: r.logo
       },
       points: r.points,
       goalsDiff: r.goal_difference,

@@ -51,8 +51,9 @@ async function main() {
     INSERT INTO cl_fixtures (
       id, kickoff_time, stage, group_name, matchday,
       team_h, team_h_name, team_a, team_a_name,
-      team_h_score, team_a_score, winner, status, details, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      team_h_score, team_a_score, winner, status, details,
+      home_logo, away_logo, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT(id) DO UPDATE SET
       kickoff_time = excluded.kickoff_time,
       stage = excluded.stage,
@@ -67,6 +68,8 @@ async function main() {
       winner = excluded.winner,
       status = excluded.status,
       details = excluded.details,
+      home_logo = excluded.home_logo,
+      away_logo = excluded.away_logo,
       updated_at = excluded.updated_at
   `)
 
@@ -108,7 +111,10 @@ async function main() {
       m.id, m.utcDate, m.stage || null, m.group || null, m.matchday || null,
       h.id, h.name || '', a.id, a.name || '',
       sc.fullTime?.home ?? null, sc.fullTime?.away ?? null, sc.winner || null,
-      mapStatus(m.status || 'SCHEDULED'), JSON.stringify(details), now
+      mapStatus(m.status || 'SCHEDULED'), JSON.stringify(details),
+      h.crest ? `https://crests.football-data.org/${h.id}.png` : null,
+      a.crest ? `https://crests.football-data.org/${a.id}.png` : null,
+      now
     )
   }
 
@@ -126,11 +132,12 @@ async function main() {
   if (table?.table?.length) {
     const upsertStanding = db.prepare(`
       INSERT INTO cl_standings (
-        team_id, stage, position, team_name, played, win, draw, loss,
+        team_id, stage, position, team_name, logo, played, win, draw, loss,
         goals_for, goals_against, goal_difference, points, form, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(team_id) DO UPDATE SET
         stage = excluded.stage, position = excluded.position, team_name = excluded.team_name,
+        logo = excluded.logo,
         played = excluded.played, win = excluded.win, draw = excluded.draw, loss = excluded.loss,
         goals_for = excluded.goals_for, goals_against = excluded.goals_against,
         goal_difference = excluded.goal_difference, points = excluded.points,
@@ -139,6 +146,7 @@ async function main() {
     for (const r of table.table) {
       upsertStanding.run(
         r.team.id, table.stage, r.position, r.team.name,
+        r.team.crest || (r.team.id ? `https://crests.football-data.org/${r.team.id}.png` : null),
         r.playedGames || 0, r.won || 0, r.draw || 0, r.lost || 0,
         r.goalsFor || 0, r.goalsAgainst || 0, r.goalDifference || 0,
         r.points || 0, r.form || '', now

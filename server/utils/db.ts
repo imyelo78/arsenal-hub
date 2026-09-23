@@ -198,6 +198,8 @@ function initSchema(db: any) {
       winner TEXT,
       status TEXT NOT NULL DEFAULT 'SCHEDULED',
       details TEXT,
+      home_logo TEXT,
+      away_logo TEXT,
       updated_at INTEGER NOT NULL
     );
 
@@ -206,6 +208,7 @@ function initSchema(db: any) {
       stage TEXT NOT NULL,
       position INTEGER NOT NULL,
       team_name TEXT NOT NULL,
+      logo TEXT,
       played INTEGER NOT NULL DEFAULT 0,
       win INTEGER NOT NULL DEFAULT 0,
       draw INTEGER NOT NULL DEFAULT 0,

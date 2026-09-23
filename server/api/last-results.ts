@@ -26,7 +26,8 @@ export default defineEventHandler(async (event) => {
   const clRows = await dbAll(db, `
     SELECT id, kickoff_time, stage, group_name, matchday,
            team_h, team_h_name, team_a, team_a_name,
-           team_h_score, team_a_score, winner, status, details
+           team_h_score, team_a_score, winner, status, details,
+           home_logo, away_logo
     FROM cl_fixtures
     WHERE (team_h = ? OR team_a = ?) AND status = 'FT'
     ORDER BY kickoff_time DESC
@@ -71,12 +72,12 @@ export default defineEventHandler(async (event) => {
       league: {
         id: 2001,
         name: 'Champions League',
-        logo: null,
+        logo: 'https://crests.football-data.org/CL.png',
         round: r.stage
       },
       teams: {
-        home: { id: r.team_h, name: r.team_h_name, logo: null },
-        away: { id: r.team_a, name: r.team_a_name, logo: null }
+        home: { id: r.team_h, name: r.team_h_name, logo: r.home_logo },
+        away: { id: r.team_a, name: r.team_a_name, logo: r.away_logo }
       },
       goals: {
         home: r.team_h_score,

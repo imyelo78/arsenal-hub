@@ -59,6 +59,8 @@ export interface ClFixtureRow {
   winner: string | null
   status: string
   details: string | null
+  home_logo: string | null
+  away_logo: string | null
   updated_at: number
 }
 
@@ -107,6 +109,8 @@ export function mapFdMatchToRow(m: any, now: number): ClFixtureRow {
     winner: sc.winner || null,
     status: mapStatus(m.status || 'SCHEDULED'),
     details: JSON.stringify(details),
+    home_logo: h.crest || h.tla ? `https://crests.football-data.org/${h.id}.png` : null,
+    away_logo: a.crest || a.tla ? `https://crests.football-data.org/${a.id}.png` : null,
     updated_at: now
   }
 }
