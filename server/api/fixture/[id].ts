@@ -51,6 +51,7 @@ export default defineEventHandler(async (event) => {
           home: details?.halfTime?.home ?? null,
           away: details?.halfTime?.away ?? null
         },
+        h2h: details?.h2h || null,
         status: {
           short: row.status,
           elapsed: row.status === 'FT' ? 90 : 0

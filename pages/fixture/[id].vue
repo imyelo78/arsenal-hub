@@ -69,6 +69,44 @@ const roundLabel = computed(() => {
   return round
 })
 
+const h2h = computed(() => {
+  const h = match.value?.fixture?.h2h
+  if (!h || !h.total) return null
+  // h2h.wins.{home,draw,away} 以本场主队视角统计
+  return h
+})
+
+const h2hText = computed(() => {
+  const h = h2h.value
+  if (!h) return ''
+  if (locale.value === 'zh') {
+    return `${t('fixture.h2hHeading')} 两队近${h.total}次交手:${h.wins.home}${t('fixture.h2hWin')} ${h.wins.draw}${t('fixture.h2hDraw')} ${h.wins.away}${t('fixture.h2hLoss')}`
+  }
+  return `H2H (last ${h.total}): ${h.wins.home}W ${h.wins.draw}D ${h.wins.away}L`
+})
+
+const isArsenalMatchName = (name: string) => /Arsenal/i.test(name)
+
+const h2hOutcomeClass = (m: any) => {
+  if (m.hs === null || m.as === null) return 'tag-gray'
+  const arsenalHome = isArsenalMatchName(m.home)
+  const ah = arsenalHome ? m.hs : m.as
+  const aa = arsenalHome ? m.as : m.hs
+  if (ah > aa) return 'tag-green'
+  if (ah < aa) return 'tag-red'
+  return 'tag-gray'
+}
+
+const h2hOutcomeText = (m: any) => {
+  if (m.hs === null || m.as === null) return (locale.value === 'zh' ? '未赛' : '-')
+  const arsenalHome = isArsenalMatchName(m.home)
+  const ah = arsenalHome ? m.hs : m.as
+  const aa = arsenalHome ? m.as : m.hs
+  if (ah > aa) return locale.value === 'zh' ? '胜' : 'W'
+  if (ah < aa) return locale.value === 'zh' ? '负' : 'L'
+  return locale.value === 'zh' ? '平' : 'D'
+}
+
 const matchStatusLabel = computed(() => {
   const s = match.value?.fixture?.status?.short || match.value?.status
   if (!s) return ''
@@ -211,6 +249,32 @@ const matchStatusLabel = computed(() => {
             <span>{{ t('fixture.referee') }}: {{ match.fixture.referee }}</span>
           </div>
         </div>
+      </div>
+
+      <!-- Head to head -->
+      <div
+        v-if="isCl && h2h"
+        class="bg-white border border-arsenal-line rounded-2xl p-6"
+      >
+        <h3 class="text-base font-bold text-arsenal-ink mb-2">{{ t('fixture.h2hHeading') }}</h3>
+        <p class="text-sm text-arsenal-muted mb-4">{{ h2hText }}</p>
+
+        <ul class="space-y-2">
+          <li
+            v-for="(m, i) in h2h.matches"
+            :key="i"
+            class="flex items-center justify-between gap-3 text-sm"
+          >
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="tag" :class="h2hOutcomeClass(m)">{{ h2hOutcomeText(m) }}</span>
+              <span class="text-xs text-arsenal-subtle whitespace-nowrap">{{ m.date }}</span>
+              <span class="truncate text-arsenal-ink2">
+                {{ m.home }} {{ m.hs ?? '-' }} - {{ m.as ?? '-' }} {{ m.away }}
+              </span>
+            </div>
+            <span v-if="m.comp" class="text-xs text-arsenal-subtle whitespace-nowrap">{{ m.comp }}</span>
+          </li>
+        </ul>
       </div>
 
       <!-- Match events / stats -->

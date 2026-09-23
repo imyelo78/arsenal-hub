@@ -75,6 +75,9 @@ async function main() {
 
   const seen = new Set()
   let withDetails = 0
+  let withH2h = 0
+
+  const existingDetailsStmt = db.prepare('SELECT details FROM cl_fixtures WHERE id = ?')
 
   for (const m of cl) {
     const h = m.homeTeam || {}
@@ -106,6 +109,42 @@ async function main() {
       }
     }
 
+    // head2head: 两队历史交锋(免费档每天10次,已存过则跳过)
+    let hasH2h = false
+    try {
+      const ex = existingDetailsStmt.get(m.id)
+      if (ex?.details) {
+        const parsed = JSON.parse(ex.details)
+        if (parsed.h2h) hasH2h = true
+      }
+    } catch {}
+    if (!hasH2h) {
+      try {
+        const h2h = await fdFetch(`/matches/${m.id}/head2head?limit=5`)
+        const agg = h2h.aggregates || {}
+        details.h2h = {
+          total: agg.numberOfMatches ?? (h2h.matches || []).length,
+          wins: {
+            home: agg.homeTeam?.wins ?? 0,
+            draw: agg.homeTeam?.draws ?? 0,
+            away: agg.homeTeam?.losses ?? 0
+          },
+          goals: agg.totalGoals ?? 0,
+          matches: (h2h.matches || []).map((mm) => ({
+            date: mm.utcDate ? mm.utcDate.slice(0, 10) : null,
+            home: mm.homeTeam?.name || '',
+            away: mm.awayTeam?.name || '',
+            hs: mm.score?.fullTime?.home ?? null,
+            as: mm.score?.fullTime?.away ?? null,
+            comp: mm.competition?.name || null
+          }))
+        }
+        withH2h++
+      } catch (e) {
+        console.log('  h2h fetch failed for', m.id, e.message)
+      }
+    }
+
     seen.add(m.id)
     const crestLocal = (id) => (id ? `/images/crests/${id}.webp` : null)
     upsertFixture.run(
@@ -124,7 +163,7 @@ async function main() {
     db.prepare(`DELETE FROM cl_fixtures WHERE id NOT IN (${placeholders})`).run(...ids)
   }
 
-  console.log('fixtures upserted:', cl.length, '| finished w/ detail:', withDetails)
+  console.log('fixtures upserted:', cl.length, '| finished w/ detail:', withDetails, '| w/ h2h:', withH2h)
 
   // ===== Standings =====
   const st = await fdFetch('/competitions/CL/standings?season=2026')

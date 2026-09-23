@@ -16,7 +16,9 @@ import {
   getFdTeamMatches,
   getFdClStandings,
   getFdMatchDetail,
+  getFdHead2Head,
   mapFdMatchToRow,
+  mapFdHead2Head,
   getFdCrestLocal,
   ARSENAL_FD_ID
 } from './football-data'
@@ -322,31 +324,45 @@ export async function syncCLFixtures(event?: any, force = false): Promise<number
     batch.push(row)
   }
 
-  // 已完赛且库中尚无详情(缺裁判/半场比分)的比赛,顺带补详情
+  // 已完赛且库中尚无详情(缺裁判/半场比分/交锋)的比赛,顺带补详情
   // 免费档每天10次,欧冠已完赛场次有限;先读库判断避免重复拉取
   for (const r of batch) {
     if (r.status !== 'FT') continue
     const existing = await dbGet(db, 'SELECT details FROM cl_fixtures WHERE id = ?', [r.id])
     let hasDetail = false
+    let hasH2h = false
+    let d: any = null
     if (existing?.details) {
       try {
-        const d = JSON.parse(existing.details)
+        d = JSON.parse(existing.details)
         hasDetail = !!d.referees?.length && (d.halfTime !== null)
+        hasH2h = !!d.h2h
       } catch {}
     }
-    if (hasDetail) continue
+    if (hasDetail && hasH2h) continue
     try {
       const detail = await getFdMatchDetail(r.id)
       if (detail) {
-        r.details = JSON.stringify({
+        d = {
           venue: detail.venue || null,
           attendance: typeof detail.attendance === 'number' ? detail.attendance : null,
           referees: Array.isArray(detail.referees) ? detail.referees.map((x: any) => x.name) : [],
           halfTime: detail.score?.halfTime || null,
-          fullTime: detail.score?.fullTime || null
-        })
+          fullTime: detail.score?.fullTime || null,
+          h2h: d?.h2h || null
+        }
+        r.details = JSON.stringify(d)
       }
     } catch {}
+    if (!hasH2h) {
+      try {
+        const h = await getFdHead2Head(r.id, 5)
+        if (h) {
+          const merged = d ? { ...d, h2h: mapFdHead2Head(h) } : { h2h: mapFdHead2Head(h) }
+          r.details = JSON.stringify(merged)
+        }
+      } catch {}
+    }
   }
 
   for (const r of batch) {

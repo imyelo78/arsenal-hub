@@ -52,6 +52,34 @@ export async function getFdMatchDetail(matchId: number): Promise<any> {
   return fdFetch(`/matches/${matchId}`)
 }
 
+// 两队历史交锋 (免费档 TIER_ONE: 仅返回本场所在赛事的历史交手)
+export async function getFdHead2Head(matchId: number, limit = 5): Promise<any> {
+  return fdFetch(`/matches/${matchId}/head2head?limit=${limit}`)
+}
+
+// 将 h2h 响应整理为精简结构, 存入 details.h2h
+export function mapFdHead2Head(h: any): any {
+  const agg = h?.aggregates || {}
+  const matches = (h?.matches || []).map((m: any) => ({
+    date: m.utcDate ? m.utcDate.slice(0, 10) : null,
+    home: m.homeTeam?.name || '',
+    away: m.awayTeam?.name || '',
+    hs: m.score?.fullTime?.home ?? null,
+    as: m.score?.fullTime?.away ?? null,
+    comp: m.competition?.name || null
+  }))
+  return {
+    total: agg.numberOfMatches ?? matches.length,
+    wins: {
+      home: agg.homeTeam?.wins ?? 0,
+      draw: agg.homeTeam?.draws ?? 0,
+      away: agg.homeTeam?.losses ?? 0
+    },
+    goals: agg.totalGoals ?? 0,
+    matches
+  }
+}
+
 export interface ClFixtureRow {
   id: number
   kickoff_time: string
