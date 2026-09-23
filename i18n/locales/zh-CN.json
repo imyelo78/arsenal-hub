@@ -39,7 +39,8 @@
     "minutes": "分",
     "seconds": "秒",
     "viewAllFixtures": "查看全部赛程",
-    "viewStandings": "查看积分榜"
+    "viewStandings": "查看积分榜",
+    "quickLinks": "快捷入口"
   },
   "fixtures": {
     "title": "赛程表",
@@ -58,14 +59,22 @@
   "fixture": {
     "upcoming": "未开始",
     "finished": "已完赛",
-    "live": "直播中"
+    "live": "直播中",
+    "matchStats": "比赛数据",
+    "saves": "扑救",
+    "yellowCards": "黄牌",
+    "bonus": "全场最佳",
+    "backToList": "返回赛程"
   },
   "standings": {
     "title": "英超积分榜",
     "subtitle": "2026-27 赛季实时排名",
     "position": "名次",
     "team": "球队",
-    "form": "近5轮"
+    "form": "近5轮",
+    "championsLeague": "欧冠区",
+    "europaLeague": "欧联区",
+    "relegation": "降级区"
   },
   "squad": {
     "title": "一线队",

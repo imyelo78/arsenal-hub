@@ -39,7 +39,8 @@
     "minutes": "Min",
     "seconds": "Sec",
     "viewAllFixtures": "View All Fixtures",
-    "viewStandings": "View Table"
+    "viewStandings": "View Table",
+    "quickLinks": "Quick Links"
   },
   "fixtures": {
     "title": "Fixtures",
@@ -58,14 +59,22 @@
   "fixture": {
     "upcoming": "Upcoming",
     "finished": "FT",
-    "live": "LIVE"
+    "live": "LIVE",
+    "matchStats": "Match Stats",
+    "saves": "Saves",
+    "yellowCards": "Yellows",
+    "bonus": "Bonus",
+    "backToList": "Back to Fixtures"
   },
   "standings": {
     "title": "Premier League Table",
     "subtitle": "2026-27 Season Live Standings",
     "position": "Pos",
     "team": "Team",
-    "form": "Last 5"
+    "form": "Last 5",
+    "championsLeague": "Champions League",
+    "europaLeague": "Europa League",
+    "relegation": "Relegation"
   },
   "squad": {
     "title": "First Team",

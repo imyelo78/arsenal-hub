@@ -43,6 +43,40 @@ const result = computed(() => {
   if (arsenalGoals < oppGoals) return 'loss'
   return 'draw'
 })
+
+const roundLabel = computed(() => {
+  const round = match.value?.league?.round || match.value?.fixture?.round
+  if (!round) return ''
+  if (typeof round === 'string' && round.startsWith('Regular Season - ')) {
+    return locale.value === 'zh' ? `第${round.replace('Regular Season - ', '')}轮` : `GW ${round.replace('Regular Season - ', '')}`
+  }
+  if (typeof round === 'string' && round.startsWith('Gameweek ')) {
+    return locale.value === 'zh' ? `第${round.replace('Gameweek ', '')}轮` : `GW ${round.replace('Gameweek ', '')}`
+  }
+  return round
+})
+
+const matchStatusLabel = computed(() => {
+  const s = match.value?.fixture?.status?.short || match.value?.status
+  if (!s) return ''
+  const map: Record<string, string> = {
+    TBD: locale.value === 'zh' ? '时间待定' : 'TBD',
+    NS: locale.value === 'zh' ? '未开始' : 'Not Started',
+    '1H': locale.value === 'zh' ? '上半场' : '1st Half',
+    HT: locale.value === 'zh' ? '中场' : 'Half Time',
+    '2H': locale.value === 'zh' ? '下半场' : '2nd Half',
+    ET: locale.value === 'zh' ? '加时赛' : 'Extra Time',
+    BT: locale.value === 'zh' ? '加时中场' : 'Break Time',
+    P: locale.value === 'zh' ? '点球大战' : 'Penalties',
+    SUSP: locale.value === 'zh' ? '中断' : 'Suspended',
+    INT: locale.value === 'zh' ? '中断' : 'Interrupted',
+    FT: locale.value === 'zh' ? '已结束' : 'Full Time',
+    AET: locale.value === 'zh' ? '加时结束' : 'After Extra Time',
+    PEN: locale.value === 'zh' ? '点球结束' : 'After Penalties',
+    LIVE: locale.value === 'zh' ? '直播中' : 'LIVE'
+  }
+  return map[s] || s
+})
 </script>
 
 <template>
@@ -88,7 +122,7 @@ const result = computed(() => {
             {{ result === 'win' ? (locale === 'zh' ? '胜' : 'W') : result === 'loss' ? (locale === 'zh' ? '负' : 'L') : (locale === 'zh' ? '平' : 'D') }}
           </span>
           <span class="text-xs text-arsenal-muted">{{ match.league?.name }}</span>
-          <span v-if="match.league?.round" class="text-xs text-arsenal-subtle">· {{ match.league.round }}</span>
+          <span v-if="match.league?.round" class="text-xs text-arsenal-subtle">· {{ roundLabel }}</span>
         </div>
 
         <!-- Teams & Score -->
@@ -116,7 +150,7 @@ const result = computed(() => {
               {{ t('fixture.upcoming') }}
             </div>
             <div class="text-xs text-arsenal-subtle mt-2">
-              {{ match.fixture?.status?.short || match.status }}
+              {{ matchStatusLabel }}
             </div>
           </div>
 
