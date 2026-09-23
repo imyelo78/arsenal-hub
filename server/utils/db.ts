@@ -2,6 +2,10 @@
 // Dev: better-sqlite3 (local file)
 // Production: Cloudflare D1 (via event.context.cloudflare.env.DB)
 
+import { createRequire } from 'node:module'
+
+const nodeRequire = createRequire(import.meta.url)
+
 let dbInstance: any = null
 
 function isCloudflarePages(): boolean {
@@ -11,9 +15,9 @@ function isCloudflarePages(): boolean {
 function getLocalDb(): any {
   if (dbInstance) return dbInstance
 
-  const Database = require('better-sqlite3')
-  const fs = require('node:fs')
-  const path = require('node:path')
+  const Database = nodeRequire('better-sqlite3')
+  const fs = nodeRequire('node:fs')
+  const path = nodeRequire('node:path')
 
   const DB_PATH = path.join(process.cwd(), '.data', 'arsenal.db')
   const dir = path.dirname(DB_PATH)

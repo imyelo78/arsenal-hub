@@ -1,5 +1,6 @@
 -- Migration: initial schema
 -- Create tables for Arsenal Hub D1 database
+-- 本文件与 server/utils/db.ts 的 initSchema() 保持一致,是 D1 应用的权威结构
 
 -- Teams
 CREATE TABLE IF NOT EXISTS teams (
@@ -27,10 +28,9 @@ CREATE TABLE IF NOT EXISTS fixtures (
   updated_at INTEGER NOT NULL
 );
 
--- Standings (snapshot of current table)
+-- Standings (team_id 是主键/唯一,支撑应用里的 ON CONFLICT(team_id))
 CREATE TABLE IF NOT EXISTS standings (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  team_id INTEGER NOT NULL,
+  team_id INTEGER PRIMARY KEY,
   position INTEGER NOT NULL,
   points INTEGER NOT NULL DEFAULT 0,
   played INTEGER NOT NULL DEFAULT 0,
@@ -57,18 +57,20 @@ CREATE TABLE IF NOT EXISTS players (
   nationality TEXT,
   age INTEGER,
   news TEXT,
-  -- Stats
-  games_started INTEGER DEFAULT 0,
+  appearances INTEGER DEFAULT 0,
+  starts INTEGER DEFAULT 0,
   minutes INTEGER DEFAULT 0,
   goals_scored INTEGER DEFAULT 0,
   assists INTEGER DEFAULT 0,
   clean_sheets INTEGER DEFAULT 0,
+  goals_conceded INTEGER DEFAULT 0,
   yellow_cards INTEGER DEFAULT 0,
   red_cards INTEGER DEFAULT 0,
   saves INTEGER DEFAULT 0,
   bps INTEGER DEFAULT 0,
   form TEXT,
   total_points INTEGER DEFAULT 0,
+  points_per_game TEXT,
   now_cost INTEGER DEFAULT 0,
   selected_by_percent TEXT,
   influence TEXT,
@@ -77,7 +79,7 @@ CREATE TABLE IF NOT EXISTS players (
   updated_at INTEGER NOT NULL
 );
 
--- Player history (last season + current)
+-- Player history (本季 + 上季)
 CREATE TABLE IF NOT EXISTS player_history (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   player_id INTEGER NOT NULL,
@@ -97,7 +99,7 @@ CREATE TABLE IF NOT EXISTS player_history (
   UNIQUE(player_id, fixture_id)
 );
 
--- Sync metadata - tracks when each data type was last synced
+-- Sync metadata
 CREATE TABLE IF NOT EXISTS sync_meta (
   key TEXT PRIMARY KEY,
   last_sync INTEGER NOT NULL,
