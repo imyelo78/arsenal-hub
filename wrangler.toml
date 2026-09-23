@@ -1,8 +1,7 @@
 name = "arsenal-hub"
 compatibility_date = "2026-09-21"
-main = ".output/server/index.mjs"
 
-# Cloudflare Pages 项目配置
+# Cloudflare Pages 项目配置（Pages 配置不允许 main 字段）
 pages_build_output_dir = ".output/public"
 
 # D1 数据库绑定
