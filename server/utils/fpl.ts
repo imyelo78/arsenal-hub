@@ -46,7 +46,9 @@ export async function getFplBootstrap(): Promise<any> {
     return fplBootstrapCache.data
   }
   try {
-    const data = await $fetch('https://fantasy.premierleague.com/api/bootstrap-static/') as any
+    const data = await $fetch('https://fantasy.premierleague.com/api/bootstrap-static/', {
+      timeout: 6000
+    }) as any
     if (data.teams) {
       for (const team of data.teams) {
         fplTeamsMap[team.id] = {
@@ -73,7 +75,9 @@ export async function getFplFixtures(): Promise<any[]> {
     return fplFixturesCache.data
   }
   try {
-    const data = await $fetch('https://fantasy.premierleague.com/api/fixtures/') as any[]
+    const data = await $fetch('https://fantasy.premierleague.com/api/fixtures/', {
+      timeout: 6000
+    }) as any[]
     fplFixturesCache = { data, timestamp: Date.now() }
     return data
   } catch (e) {

@@ -238,7 +238,8 @@ export async function syncPlayers(event?: any, force = false): Promise<number> {
   for (const p of arsenalPlayers) {
     try {
       const summary = await $fetch(
-        `https://fantasy.premierleague.com/api/element-summary/${p.id}/`
+        `https://fantasy.premierleague.com/api/element-summary/${p.id}/`,
+        { timeout: 6000 }
       ) as any
 
       for (const h of (summary.history || [])) {
