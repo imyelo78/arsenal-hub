@@ -112,7 +112,8 @@ export async function syncStandings(event?: any, force = false): Promise<number>
 
   const teams = await dbAll(db, 'SELECT id, name, code FROM teams ORDER BY id')
   if (!teams.length) {
-    await syncTeams(event, true)
+    const synced = await syncTeams(event, true)
+    if (!synced) return 0
     return syncStandings(event, true)
   }
 

@@ -45,9 +45,16 @@ export function useDb(event?: any): any {
 // D1 uses .bind() and .all() / .first() / .run() instead of .prepare().all()
 // We need wrapper functions that work with both
 
+// Detect D1: the D1 Database object has .batch()/.dump()/etc but NOT .bind()
+// (the .bind() method lives on the prepared Statement). better-sqlite3's
+// Database has neither .batch() nor .dump().
+function isD1(db: any): boolean {
+  return !!(db && typeof db.batch === 'function')
+}
+
 export async function dbAll(db: any, sql: string, params: any[] = []): Promise<any[]> {
-  // D1 (async)
-  if (db.bind) {
+  if (isD1(db)) {
+    // D1 (async)
     const stmt = db.prepare(sql).bind(...params)
     const result = await stmt.all()
     return result.results || []
@@ -57,10 +64,9 @@ export async function dbAll(db: any, sql: string, params: any[] = []): Promise<a
 }
 
 export async function dbGet(db: any, sql: string, params: any[] = []): Promise<any | null> {
-  // D1 (async)
-  if (db.bind) {
-    const stmt = db.prepare(sql).bind(...params)
-    const result = await stmt.first()
+  if (isD1(db)) {
+    // D1 (async)
+    const result = await db.prepare(sql).bind(...params).first()
     return result || null
   }
   // better-sqlite3 (sync)
@@ -68,10 +74,9 @@ export async function dbGet(db: any, sql: string, params: any[] = []): Promise<a
 }
 
 export async function dbRun(db: any, sql: string, params: any[] = []): Promise<any> {
-  // D1 (async)
-  if (db.bind) {
-    const stmt = db.prepare(sql).bind(...params)
-    return await stmt.run()
+  if (isD1(db)) {
+    // D1 (async)
+    return await db.prepare(sql).bind(...params).run()
   }
   // better-sqlite3 (sync)
   return db.prepare(sql).run(...params)
