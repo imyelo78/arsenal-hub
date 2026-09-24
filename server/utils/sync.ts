@@ -188,6 +188,13 @@ export async function syncStandings(event?: any, force = false): Promise<number>
 }
 
 // ===== Players =====
+// 永久转会/自由身离队的标记, 同步时跳过(官方 FPL 只更新 news 不剔除名单)
+const DEPARTED_NEWS_PATTERN = /(permanently|free agent|departed the club|has left|left the club|transferred (away|out))/i
+
+function isDepartedPlayer(news: string): boolean {
+  return !!news && DEPARTED_NEWS_PATTERN.test(news)
+}
+
 export async function syncPlayers(event?: any, force = false): Promise<number> {
   const db = useDb(event)
   if (!force && !(await shouldSync(db, 'players', SYNC_INTERVALS.players))) {
@@ -199,8 +206,18 @@ export async function syncPlayers(event?: any, force = false): Promise<number> {
 
   await syncTeams(event)
 
+  // 清理官方已标记离队的阿森纳球员(及其历史)
+  const departedIds = bootstrap.elements
+    .filter((p: any) => p.team === ARSENAL_FPL_ID && isDepartedPlayer(p.news || ''))
+    .map((p: any) => p.id)
+  for (const id of departedIds) {
+    await dbRun(db, 'DELETE FROM player_history WHERE player_id = ?', [id])
+    await dbRun(db, 'DELETE FROM players WHERE id = ?', [id])
+  }
+
   const now = Date.now()
-  for (const p of bootstrap.elements) {
+  const active = bootstrap.elements.filter((p: any) => !isDepartedPlayer(p.news || ''))
+  for (const p of active) {
     const photoUrl = p.code
       ? `https://resources.premierleague.com/premierleague/photos/players/110x140/p${String(p.code).padStart(6, '0')}.png`
       : null
@@ -246,7 +263,7 @@ export async function syncPlayers(event?: any, force = false): Promise<number> {
   }
 
   // Sync player history for Arsenal players
-  const arsenalPlayers = bootstrap.elements.filter((p: any) => p.team === ARSENAL_FPL_ID)
+  const arsenalPlayers = active.filter((p: any) => p.team === ARSENAL_FPL_ID)
   for (const p of arsenalPlayers) {
     try {
       const summary = await $fetch(
