@@ -54,9 +54,7 @@ const posKeys = computed(() => Object.keys(positionGroups.value))
       </div>
     </div>
 
-    <div v-else-if="players.length === 0" class="text-center text-arsenal-muted py-16 text-sm">
-      {{ t('common.noData') }}
-    </div>
+    <EmptyState v-else-if="players.length === 0" icon="🩷" :message="t('common.noData')" />
 
     <template v-else>
       <div class="space-y-10">

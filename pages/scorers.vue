@@ -14,9 +14,7 @@ const scorers = computed(() => data.value?.response || [])
       <p class="text-gray-500 mt-1">{{ t('scorers.subtitle') }}</p>
     </div>
 
-    <div v-if="scorers.length === 0" class="text-center text-gray-400 py-12">
-      {{ t('common.noData') }}
-    </div>
+    <EmptyState v-if="scorers.length === 0" icon="⚽" :message="t('common.noData')" />
 
     <div v-if="scorers.length > 0" class="card overflow-x-auto">
       <table class="w-full text-sm">

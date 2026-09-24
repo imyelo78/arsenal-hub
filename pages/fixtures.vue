@@ -89,9 +89,12 @@ const filteredFixtures = computed(() => {
     </div>
 
     <div v-else class="space-y-2">
-      <div v-if="filteredFixtures.length === 0" class="text-center text-arsenal-muted py-16 text-sm">
-        {{ t('common.noData') }}
-      </div>
+      <EmptyState
+        v-if="filteredFixtures.length === 0"
+        :title="t('common.noFixtures')"
+        icon=""
+        :message="t('common.noData')"
+      />
 
       <FixtureCard
         v-for="match in filteredFixtures"

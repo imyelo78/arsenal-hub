@@ -153,11 +153,13 @@ const matchStatusLabel = computed(() => {
     </div>
 
     <!-- Error -->
-    <div v-else-if="error" class="text-center py-16">
-      <p class="text-arsenal-muted">{{ t('common.noData') }}</p>
-      <NuxtLink :to="localePath('/fixtures')" class="btn-primary mt-4 inline-block">
-        {{ t('fixtures.title') }}
-      </NuxtLink>
+    <div v-else-if="error">
+      <EmptyState icon="📭" :message="t('common.noData')" />
+      <div class="text-center">
+        <NuxtLink :to="localePath('/fixtures')" class="btn-primary mt-4 inline-block">
+          {{ t('fixtures.title') }}
+        </NuxtLink>
+      </div>
     </div>
 
     <!-- Match Detail -->
@@ -283,15 +285,74 @@ const matchStatusLabel = computed(() => {
 
         <div v-if="match.stats" class="space-y-4">
           <!-- Goals -->
-          <div class="flex items-center gap-4">
-            <div class="flex-1 text-right font-medium text-arsenal-ink2 tabular">
-              {{ match.stats.goals_scored?.home?.length || 0 }}
+          <div>
+            <div class="flex items-center gap-4">
+              <div class="flex-1 text-right font-medium text-arsenal-ink2 tabular">
+                {{ match.stats.goals_scored?.home?.length || 0 }}
+              </div>
+              <div class="w-24 text-center text-xs text-arsenal-muted uppercase tracking-wider">
+                {{ t('squad.goals') }}
+              </div>
+              <div class="flex-1 text-left font-medium text-arsenal-ink2 tabular">
+                {{ match.stats.goals_scored?.away?.length || 0 }}
+              </div>
             </div>
-            <div class="w-24 text-center text-xs text-arsenal-muted uppercase tracking-wider">
-              {{ t('squad.goals') }}
+            <div class="flex items-center gap-4 mt-1 text-xs text-arsenal-subtle">
+              <div class="flex-1 text-right">
+                <span
+                  v-for="(g, gi) in match.stats.goals_scored?.home || []"
+                  :key="gi"
+                  class="inline-block mr-1.5"
+                >
+                  {{ g.name }}<template v-if="g.value > 1"> ×{{ g.value }}</template>
+                </span>
+              </div>
+              <div class="w-24" />
+              <div class="flex-1 text-left">
+                <span
+                  v-for="(g, gi) in match.stats.goals_scored?.away || []"
+                  :key="gi"
+                  class="inline-block mr-1.5"
+                >
+                  {{ g.name }}<template v-if="g.value > 1"> ×{{ g.value }}</template>
+                </span>
+              </div>
             </div>
-            <div class="flex-1 text-left font-medium text-arsenal-ink2 tabular">
-              {{ match.stats.goals_scored?.away?.length || 0 }}
+          </div>
+
+          <!-- Assists -->
+          <div>
+            <div class="flex items-center gap-4">
+              <div class="flex-1 text-right font-medium text-arsenal-ink2 tabular">
+                {{ match.stats.assists?.home?.length || 0 }}
+              </div>
+              <div class="w-24 text-center text-xs text-arsenal-muted uppercase tracking-wider">
+                {{ t('fixture.assists') || 'Assists' }}
+              </div>
+              <div class="flex-1 text-left font-medium text-arsenal-ink2 tabular">
+                {{ match.stats.assists?.away?.length || 0 }}
+              </div>
+            </div>
+            <div class="flex items-center gap-4 mt-1 text-xs text-arsenal-subtle">
+              <div class="flex-1 text-right">
+                <span
+                  v-for="(g, gi) in match.stats.assists?.home || []"
+                  :key="gi"
+                  class="inline-block mr-1.5"
+                >
+                  {{ g.name }}<template v-if="g.value > 1"> ×{{ g.value }}</template>
+                </span>
+              </div>
+              <div class="w-24" />
+              <div class="flex-1 text-left">
+                <span
+                  v-for="(g, gi) in match.stats.assists?.away || []"
+                  :key="gi"
+                  class="inline-block mr-1.5"
+                >
+                  {{ g.name }}<template v-if="g.value > 1"> ×{{ g.value }}</template>
+                </span>
+              </div>
             </div>
           </div>
 

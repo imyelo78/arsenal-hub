@@ -29,6 +29,7 @@
     "form": "Form",
     "loading": "Loading...",
     "noData": "No data available",
+    "noFixtures": "No fixtures found",
     "error": "Failed to load data"
   },
   "home": {
@@ -38,9 +39,11 @@
     "hours": "Hrs",
     "minutes": "Min",
     "seconds": "Sec",
-    "viewAllFixtures": "View All Fixtures",
-    "viewStandings": "View Table",
-    "quickLinks": "Quick Links"
+"viewAllFixtures": "View All Fixtures",
+    "viewStandings": "View Standings",
+    "quickLinks": "Quick Links",
+    "uclRank": "UCL League Phase",
+    "uclRankLabel": "Current UCL Rank"
   },
   "fixtures": {
     "title": "Fixtures",
@@ -61,6 +64,7 @@
     "finished": "FT",
     "live": "LIVE",
     "matchStats": "Match Stats",
+    "assists": "Assists",
     "saves": "Saves",
     "yellowCards": "Yellows",
     "bonus": "Bonus",

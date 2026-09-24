@@ -39,9 +39,7 @@ const getPositionLabel = (key: string) => {
 
 <template>
   <div class="space-y-6">
-    <div v-if="!player" class="text-center text-gray-400 py-12">
-      {{ t('common.noData') }}
-    </div>
+    <EmptyState v-if="!player" icon="🧤" :message="t('common.noData')" />
 
     <template v-if="player">
       <!-- Player header -->

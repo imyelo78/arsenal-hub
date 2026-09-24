@@ -70,6 +70,7 @@ function isArsenal(teamId: number): boolean {
             <th class="text-center py-3 px-1.5 font-semibold text-arsenal-muted text-xs uppercase tracking-wider tabular hidden sm:table-cell">L</th>
             <th class="text-center py-3 px-2 font-semibold text-arsenal-muted text-xs uppercase tracking-wider tabular hidden md:table-cell">GD</th>
             <th class="text-center py-3 px-3 font-semibold text-arsenal-ink text-xs uppercase tracking-wider tabular">{{ t('common.points') }}</th>
+            <th class="text-center py-3 px-3 font-semibold text-arsenal-muted text-xs uppercase tracking-wider hidden lg:table-cell">Form</th>
           </tr>
         </thead>
         <tbody>
@@ -128,6 +129,19 @@ function isArsenal(teamId: number): boolean {
             <!-- Points -->
             <td class="text-center py-3 px-3">
               <span class="font-bold text-arsenal-ink tabular">{{ row.points }}</span>
+            </td>
+
+            <!-- Form -->
+            <td class="text-center py-3 px-3 hidden lg:table-cell">
+              <div class="flex justify-center gap-0.5">
+                <span
+                  v-for="(f, i) in (row.form || '').split('')"
+                  :key="i"
+                  class="w-4 h-4 rounded text-[9px] font-bold flex items-center justify-center text-white"
+                  :class="f === 'W' ? 'bg-green-500' : f === 'D' ? 'bg-amber-500' : f === 'L' ? 'bg-red-500' : 'bg-gray-300 text-gray-600'"
+                >{{ f }}</span>
+                <span v-if="!row.form" class="text-xs text-arsenal-muted">–</span>
+              </div>
             </td>
           </tr>
         </tbody>

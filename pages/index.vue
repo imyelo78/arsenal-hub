@@ -6,9 +6,23 @@ const localePath = useLocalePath()
 
 const { data: nextMatchData, pending: nextPending } = await useFetch('/api/next-match')
 const { data: lastResultsData } = await useFetch('/api/last-results')
+const { data: clStandingsData } = await useFetch('/api/standings?comp=cl')
 
 const nextMatch = computed(() => nextMatchData.value?.nextMatch || null)
 const recentResults = computed(() => lastResultsData.value?.results || [])
+const clStandings = computed(() => clStandingsData.value?.response || [])
+const arsenalCl = computed(() =>
+  clStandings.value.find((r: any) => ARSENAL_IDS.includes(r.team.id)) || null
+)
+const formItems = computed(() => {
+  const f = arsenalCl.value?.form || ''
+  return f.split('').map((c: string) => ({
+    code: c,
+    win: c === 'W',
+    draw: c === 'D',
+    loss: c === 'L'
+  }))
+})
 
 // ===== Banner carousel =====
 const banners = [
@@ -293,6 +307,55 @@ const matchdayLabel = computed(() => {
           <div class="font-semibold text-arsenal-ink text-sm">{{ t('nav.club') }}</div>
           <div class="text-xs text-arsenal-muted mt-1">{{ t('club.subtitle') }}</div>
         </NuxtLink>
+      </div>
+    </section>
+
+    <!-- Divider -->
+    <div class="divider" />
+
+    <!-- ===== UCL Standings snapshot ===== -->
+    <section v-if="arsenalCl" class="card">
+      <div class="flex items-center justify-between mb-4">
+        <div class="section-title">
+          <h2 class="text-base font-bold">{{ t('home.uclRank') }}</h2>
+        </div>
+        <NuxtLink :to="localePath('/standings')" class="text-sm text-arsenal-red hover:underline font-medium">
+          {{ t('home.viewStandings') }}
+        </NuxtLink>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2.5 flex-1">
+          <span
+            v-if="arsenalCl.rank"
+            class="text-3xl font-black text-arsenal-red tabular-nums"
+          >#{{ arsenalCl.rank }}</span>
+          <div>
+            <div class="text-sm font-bold text-arsenal-ink">
+              {{ t('home.uclRankLabel') }}
+            </div>
+            <div class="text-xs text-arsenal-muted">
+              {{ arsenalCl.team?.name }}
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <div class="text-center">
+            <div class="text-xl font-bold text-arsenal-ink tabular-nums">{{ arsenalCl.points }}</div>
+            <div class="text-[10px] text-arsenal-muted uppercase tracking-wider">{{ t('common.points') }}</div>
+          </div>
+          <div class="h-8 w-px bg-arsenal-line2" />
+          <div class="flex gap-0.5">
+            <span
+              v-for="(f, i) in formItems"
+              :key="i"
+              class="w-5 h-5 rounded text-[10px] font-bold flex items-center justify-center text-white"
+              :class="f.win ? 'bg-green-500' : f.draw ? 'bg-amber-500' : f.loss ? 'bg-red-500' : 'bg-gray-300 text-gray-600'"
+            >{{ f.code }}</span>
+          </div>
+          <span v-if="!formItems.length" class="text-xs text-arsenal-muted">{{ t('common.noData') }}</span>
+        </div>
       </div>
     </section>
 

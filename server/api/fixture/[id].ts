@@ -1,4 +1,4 @@
-import { useDb, dbGet } from '../../utils/db'
+import { useDb, dbGet, dbAll } from '../../utils/db'
 import { syncFixtures, syncCLFixtures } from '../../utils/sync'
 import { ARSENAL_FD_ID, CL_COMPETITION_LOGO } from '../../utils/football-data'
 
@@ -109,6 +109,42 @@ export default defineEventHandler(async (event) => {
         }
       }
     } catch {}
+  }
+
+  // 解析进球者/助攻者 element -> 球员名
+  const involvedPlayers = new Set<number>()
+  if (stats?.goals_scored) {
+    for (const side of [stats.goals_scored.home, stats.goals_scored.away]) {
+      for (const e of side) involvedPlayers.add(e.element)
+    }
+  }
+  if (stats?.assists) {
+    for (const side of [stats.assists.home, stats.assists.away]) {
+      for (const e of side) involvedPlayers.add(e.element)
+    }
+  }
+  let playerMap: Record<number, string> = {}
+  if (involvedPlayers.size) {
+    const ids = Array.from(involvedPlayers)
+    const placeholders = ids.map(() => '?').join(',')
+    const pls = await dbAll(db, `SELECT id, web_name FROM players WHERE id IN (${placeholders})`, ids)
+    for (const p of pls) playerMap[p.id] = p.web_name
+  }
+  function resolve(entries: any[]): { value: number; name: string }[] {
+    return (entries || []).map((e) => ({
+      value: e.value,
+      name: playerMap[e.element] || `#${e.element}`
+    }))
+  }
+  if (stats) {
+    if (stats.goals_scored) {
+      stats.goals_scored.home = resolve(stats.goals_scored.home)
+      stats.goals_scored.away = resolve(stats.goals_scored.away)
+    }
+    if (stats.assists) {
+      stats.assists.home = resolve(stats.assists.home)
+      stats.assists.away = resolve(stats.assists.away)
+    }
   }
 
   const response = {
