@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ARSENAL_IDS } from '~/utils/constants'
+import { ARSENAL_IDS, LIVE_SOURCES } from '~/utils/constants'
 
 const route = useRoute()
 const { t, locale } = useI18n()
@@ -32,6 +32,12 @@ const isFinished = computed(() => {
 })
 
 const isCl = computed(() => match.value?.league?.id === 2001)
+
+const liveSources = computed(() => {
+  const id = match.value?.league?.id
+  if (id === undefined || id === null) return []
+  return LIVE_SOURCES[id] || []
+})
 
 const matchStageLabel = computed(() => {
   const stage = match.value?.fixture?.stage
@@ -251,6 +257,30 @@ const matchStatusLabel = computed(() => {
             <span>{{ t('fixture.referee') }}: {{ match.fixture.referee }}</span>
           </div>
         </div>
+      </div>
+
+      <!-- Watch live -->
+      <div
+        v-if="!isFinished && liveSources.length"
+        class="bg-white border border-arsenal-line rounded-2xl p-6"
+      >
+        <h3 class="text-base font-bold text-arsenal-ink mb-3">{{ t('fixture.watchLive') }}</h3>
+        <div class="flex flex-wrap gap-3">
+          <a
+            v-for="(src, i) in liveSources"
+            :key="i"
+            :href="src.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-arsenal-red text-white text-sm font-medium hover:bg-arsenal-red-600 transition-colors"
+          >
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+            <span>{{ locale === 'zh' ? src.zhName : src.name }}</span>
+          </a>
+        </div>
+        <p class="text-xs text-arsenal-subtle mt-3">{{ t('fixture.liveDisclaimer') }}</p>
       </div>
 
       <!-- Head to head -->
