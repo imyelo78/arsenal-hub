@@ -279,83 +279,84 @@ const matchStatusLabel = computed(() => {
         </ul>
       </div>
 
-      <!-- Match events / stats -->
+      <!-- Goalscorers -->
       <div v-if="isFinished" class="bg-white border border-arsenal-line rounded-2xl p-6">
+        <h3 class="text-base font-bold text-arsenal-ink mb-5">{{ t('fixture.goalscorers') }}</h3>
+
+        <div v-if="match.stats?.goals_scored" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <!-- Home -->
+          <div class="space-y-3">
+            <div class="flex items-center justify-between text-sm">
+              <span class="font-medium text-arsenal-ink2 truncate">{{ match.teams?.home?.name }}</span>
+              <span class="text-arsenal-red font-bold tabular-nums text-lg">{{ match.stats.goals_scored.home?.length || 0 }}</span>
+            </div>
+            <ul class="space-y-2">
+              <li
+                v-for="(g, gi) in match.stats.goals_scored.home"
+                :key="gi"
+                class="flex items-center gap-2 text-sm text-arsenal-ink2"
+              >
+                <span class="inline-block w-2 h-2 rounded-full bg-arsenal-red shrink-0" />
+                <span class="font-medium">{{ g.name }}</span>
+                <template v-if="g.value > 1">
+                  <span class="text-xs text-arsenal-subtle">×{{ g.value }}</span>
+                </template>
+              </li>
+              <li v-if="!match.stats.goals_scored.home?.length" class="text-sm text-arsenal-subtle">—</li>
+            </ul>
+            <p
+              v-if="match.stats.assists?.home?.length"
+              class="text-xs text-arsenal-subtle pt-2 border-t border-arsenal-line"
+            >
+              {{ t('fixture.assists') }}:
+              <template v-for="(a, ai) in match.stats.assists.home" :key="ai">
+                {{ a.name }}<template v-if="a.value > 1"> ×{{ a.value }}</template><template v-if="ai < match.stats.assists.home.length - 1">, </template>
+              </template>
+            </p>
+          </div>
+
+          <!-- Away -->
+          <div class="space-y-3 sm:border-l sm:border-arsenal-line sm:pl-6">
+            <div class="flex items-center justify-between text-sm">
+              <span class="font-medium text-arsenal-ink2 truncate">{{ match.teams?.away?.name }}</span>
+              <span class="text-arsenal-red font-bold tabular-nums text-lg">{{ match.stats.goals_scored.away?.length || 0 }}</span>
+            </div>
+            <ul class="space-y-2">
+              <li
+                v-for="(g, gi) in match.stats.goals_scored.away"
+                :key="gi"
+                class="flex items-center gap-2 text-sm text-arsenal-ink2"
+              >
+                <span class="inline-block w-2 h-2 rounded-full bg-white border border-arsenal-ink3 shrink-0" />
+                <span class="font-medium">{{ g.name }}</span>
+                <template v-if="g.value > 1">
+                  <span class="text-xs text-arsenal-subtle">×{{ g.value }}</span>
+                </template>
+              </li>
+              <li v-if="!match.stats.goals_scored.away?.length" class="text-sm text-arsenal-subtle">—</li>
+            </ul>
+            <p
+              v-if="match.stats.assists?.away?.length"
+              class="text-xs text-arsenal-subtle pt-2 border-t border-arsenal-line"
+            >
+              {{ t('fixture.assists') }}:
+              <template v-for="(a, ai) in match.stats.assists.away" :key="ai">
+                {{ a.name }}<template v-if="a.value > 1"> ×{{ a.value }}</template><template v-if="ai < match.stats.assists.away.length - 1">, </template>
+              </template>
+            </p>
+          </div>
+        </div>
+
+        <p v-else class="text-sm text-arsenal-muted text-center py-4">
+          {{ t('fixture.noScorerData') }}
+        </p>
+      </div>
+
+      <!-- Match stats -->
+      <div v-if="isFinished && match.stats" class="bg-white border border-arsenal-line rounded-2xl p-6">
         <h3 class="text-base font-bold text-arsenal-ink mb-5">{{ t('fixture.matchStats') || 'Match Stats' }}</h3>
 
-        <div v-if="match.stats" class="space-y-4">
-          <!-- Goals -->
-          <div>
-            <div class="flex items-center gap-4">
-              <div class="flex-1 text-right font-medium text-arsenal-ink2 tabular">
-                {{ match.stats.goals_scored?.home?.length || 0 }}
-              </div>
-              <div class="w-24 text-center text-xs text-arsenal-muted uppercase tracking-wider">
-                {{ t('squad.goals') }}
-              </div>
-              <div class="flex-1 text-left font-medium text-arsenal-ink2 tabular">
-                {{ match.stats.goals_scored?.away?.length || 0 }}
-              </div>
-            </div>
-            <div class="flex items-center gap-4 mt-1 text-xs text-arsenal-subtle">
-              <div class="flex-1 text-right">
-                <span
-                  v-for="(g, gi) in match.stats.goals_scored?.home || []"
-                  :key="gi"
-                  class="inline-block mr-1.5"
-                >
-                  {{ g.name }}<template v-if="g.value > 1"> ×{{ g.value }}</template>
-                </span>
-              </div>
-              <div class="w-24" />
-              <div class="flex-1 text-left">
-                <span
-                  v-for="(g, gi) in match.stats.goals_scored?.away || []"
-                  :key="gi"
-                  class="inline-block mr-1.5"
-                >
-                  {{ g.name }}<template v-if="g.value > 1"> ×{{ g.value }}</template>
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Assists -->
-          <div>
-            <div class="flex items-center gap-4">
-              <div class="flex-1 text-right font-medium text-arsenal-ink2 tabular">
-                {{ match.stats.assists?.home?.length || 0 }}
-              </div>
-              <div class="w-24 text-center text-xs text-arsenal-muted uppercase tracking-wider">
-                {{ t('fixture.assists') || 'Assists' }}
-              </div>
-              <div class="flex-1 text-left font-medium text-arsenal-ink2 tabular">
-                {{ match.stats.assists?.away?.length || 0 }}
-              </div>
-            </div>
-            <div class="flex items-center gap-4 mt-1 text-xs text-arsenal-subtle">
-              <div class="flex-1 text-right">
-                <span
-                  v-for="(g, gi) in match.stats.assists?.home || []"
-                  :key="gi"
-                  class="inline-block mr-1.5"
-                >
-                  {{ g.name }}<template v-if="g.value > 1"> ×{{ g.value }}</template>
-                </span>
-              </div>
-              <div class="w-24" />
-              <div class="flex-1 text-left">
-                <span
-                  v-for="(g, gi) in match.stats.assists?.away || []"
-                  :key="gi"
-                  class="inline-block mr-1.5"
-                >
-                  {{ g.name }}<template v-if="g.value > 1"> ×{{ g.value }}</template>
-                </span>
-              </div>
-            </div>
-          </div>
-
+        <div class="space-y-4">
           <!-- Saves -->
           <div class="flex items-center gap-4">
             <div class="flex-1 text-right font-medium text-arsenal-ink2 tabular">
@@ -395,10 +396,6 @@ const matchStatusLabel = computed(() => {
             </div>
           </div>
         </div>
-
-        <p v-else class="text-sm text-arsenal-muted text-center py-4">
-          {{ t('common.noData') }}
-        </p>
       </div>
 
       <!-- Back button -->
