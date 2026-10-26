@@ -66,6 +66,10 @@ const keyPlayers = computed<KeyPlayer[]>(() => {
 
 const posLabel = (p: any) => t(`squad.pos${p.position || ''}`, p.position || '')
 
+/* ---------- 焦点卡图片：优先球员专属图 /images/players/key/{id}.jpg，缺失时回退位置示意图 ---------- */
+const failedKeyArt = reactive(new Set<number>())
+const keyArtUrl = (p: any) => `/images/players/key/${p.id}.jpg`
+
 /* ---------- 队内数据榜 ---------- */
 const boardTop = (score: (p: any) => number) =>
   [...players.value].sort((a, b) => score(b) - score(a)).slice(0, 5)
@@ -190,7 +194,13 @@ onMounted(() => {
               :to="localePath(`/player/${kp.player.id}`)"
               class="group relative block aspect-[3/4.1] overflow-hidden rounded-2xl border border-white/10 bg-arsenal-night-soft transition-all duration-300 hover:-translate-y-2 hover:border-arsenal-red/50 hover:shadow-[0_30px_60px_rgba(0,0,0,.5)]"
             >
-              <img :src="kp.art" :alt="kp.player.webName" class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.07]" loading="lazy" />
+              <img
+                :src="failedKeyArt.has(kp.player.id) ? kp.art : keyArtUrl(kp.player)"
+                :alt="kp.player.webName"
+                class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.07]"
+                loading="lazy"
+                @error="failedKeyArt.add(kp.player.id)"
+              />
               <div class="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,10,14,.35)_0%,rgba(10,10,14,.05)_35%,rgba(10,10,14,.3)_62%,rgba(10,10,14,.94)_100%)]"></div>
               <div v-if="kp.player.number" class="stroke-num pointer-events-none absolute right-4 top-2 font-score text-6xl font-bold leading-none md:text-7xl">{{ kp.player.number }}</div>
               <div class="absolute inset-x-0 bottom-0 p-6">
