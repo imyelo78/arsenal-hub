@@ -379,7 +379,6 @@ onMounted(() => {
           <p class="reveal mt-4 max-w-lg text-[15px] leading-8 text-white/70">{{ t('squad.ctaSub') }}</p>
           <div class="reveal mt-8 flex flex-wrap gap-3.5">
             <NuxtLink :to="localePath('/legends')" class="btn-red">{{ t('squad.ctaLegends') }}</NuxtLink>
-            <NuxtLink :to="localePath('/scorers')" class="btn-glass">{{ t('squad.ctaScorers') }}</NuxtLink>
           </div>
         </div>
       </section>
