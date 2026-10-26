@@ -48,6 +48,7 @@ export const legends = [
     nationality: 'France',
     apps: 370,
     goals: 228,
+    number: 14,
     description: {
       'zh-CN': '阿森纳历史最佳射手，228粒进球。海布里国王，不败赛季核心成员。两次赢得英超金靴，四次英超金靴得主。2003-04赛季不败夺冠的灵魂人物。',
       'en-US': 'Arsenal\'s all-time top scorer with 228 goals. The King of Highbury, key member of the Invincibles. Four-time Premier League Golden Boot winner and the soul of the 2003-04 unbeaten season.'
@@ -61,6 +62,7 @@ export const legends = [
     nationality: 'Netherlands',
     apps: 423,
     goals: 120,
+    number: 10,
     description: {
       'zh-CN': '冰人，阿森纳技术流代表。非毁容式的触球和传球，无数经典进球。不败赛季不可或缺的创意核心。',
       'en-US': 'The Iceman, Arsenal\'s technical maestro. Renowned for his sublime touch and vision, scoring countless memorable goals. An indispensable creative force in the Invincibles season.'
@@ -74,6 +76,7 @@ export const legends = [
     nationality: 'France',
     apps: 406,
     goals: 34,
+    number: 4,
     description: {
       'zh-CN': '不败赛季队长，中场铁闸。力量与技术的完美结合，阿森纳中场的精神领袖。在2003-04不败赛季佩戴队长袖标。',
       'en-US': 'Captain of the Invincibles, midfield enforcer. The perfect blend of power and technique, Arsenal\'s spiritual leader in midfield. Wore the armband during the 2003-04 unbeaten season.'
@@ -87,6 +90,7 @@ export const legends = [
     nationality: 'England',
     apps: 669,
     goals: 48,
+    number: 5,
     description: {
       'zh-CN': '阿森纳先生，19年忠诚服务。四个不同年代的英超冠军的队长。英格兰足球史上最伟大的中后卫之一。',
       'en-US': 'Mr. Arsenal, 19 years of loyal service. Captain in four different decades of league titles. One of the greatest central defenders in English football history.'
@@ -100,6 +104,7 @@ export const legends = [
     nationality: 'England',
     apps: 288,
     goals: 185,
+    number: 8,
     description: {
       'zh-CN': '阿森纳历史第二射手，185粒进球。激情四射的射手，1997年打破俱乐部历史进球纪录。',
       'en-US': 'Arsenal\'s second all-time top scorer with 185 goals. A passionate striker who broke the club\'s all-time scoring record in 1997.'
@@ -113,6 +118,7 @@ export const legends = [
     nationality: 'France',
     apps: 281,
     goals: 84,
+    number: 7,
     description: {
       'zh-CN': '不败赛季左路之王，优雅的法国边锋。2003-04赛季打进14球，PFA年度最佳球员提名。',
       'en-US': 'The left-wing king of the Invincibles, elegant French winger. Scored 14 goals in the 2003-04 season, PFA Player of the Year nominee.'
@@ -126,6 +132,7 @@ export const legends = [
     nationality: 'Spain',
     apps: 303,
     goals: 57,
+    number: 4,
     description: {
       'zh-CN': '阿森纳最年轻的队长，16岁加盟。传球大师，从维埃拉手中接过接力棒，成为阿森纳中场核心。',
       'en-US': 'Arsenal\'s youngest-ever captain, joined at 16. A passing maestro who took the baton from Vieira to become Arsenal\'s midfield fulcrum.'

@@ -13,13 +13,19 @@ const isSquad = computed(() => {
   const p = route.path.replace(/\/+$/, '')
   return p === '/squad' || p === '/en/squad'
 })
+
+// 传奇殿堂页同为全宽沉浸式布局（zh: /legends, en: /en/legends）
+const isLegends = computed(() => {
+  const p = route.path.replace(/\/+$/, '')
+  return p === '/legends' || p === '/en/legends'
+})
 </script>
 
 <template>
   <div class="min-h-screen flex flex-col bg-white">
     <AppNavbar />
-    <main class="flex-1" :class="isHome || isSquad ? '' : 'pt-16'">
-      <div v-if="isHome || isSquad">
+    <main class="flex-1" :class="isHome || isSquad || isLegends ? '' : 'pt-16'">
+      <div v-if="isHome || isSquad || isLegends">
         <div class="page-transition">
           <slot />
         </div>
