@@ -44,7 +44,22 @@
     "viewStandings": "查看积分榜",
     "quickLinks": "快捷入口",
     "uclRank": "欧冠联赛阶段排名",
-    "uclRankLabel": "欧冠当前排名"
+    "uclRankLabel": "欧冠当前排名",
+    "resultsSub": "RECENT RESULTS · 英超 / 欧冠",
+    "atmoDesc": "自 1886 年以来，红白是我们的颜色，酋长球场是我们的家。从这里出发，追随枪手征战每一个赛季。",
+    "uclTitle": "欧冠征程",
+    "uclSub": "CHAMPIONS LEAGUE · 联赛阶段",
+    "uclKicker": "League Phase · 当前排名",
+    "uclPlayed": "{n} 轮战罢",
+    "uclTop8": "直接晋级区之内",
+    "uclBehind": "为直接晋级而战",
+    "uclNextKicker": "下一场 · 欧冠",
+    "goFixtures": "前往赛程页",
+    "quickFixturesDesc": "英超、欧冠全部赛程与结果，支持按月份筛选",
+    "quickStandingsDesc": "英超实时排名与欧冠联赛阶段积分",
+    "quickSquadDesc": "球员赛季数据、近 5 场表现与 FPL 得分",
+    "quickLegendsDesc": "亨利、博格坎普、维埃拉，那些载入史册的名字",
+    "viewMore": "立即查看"
   },
   "fixtures": {
     "title": "赛程表",

@@ -7,6 +7,7 @@ const route = useRoute()
 const { locale, setLocale } = useI18n()
 const localePath = useLocalePath()
 const mobileMenuOpen = ref(false)
+const scrolled = ref(false)
 
 const navItems = [
   { key: 'home', path: '/', label: 'nav.home' },
@@ -33,16 +34,34 @@ watch(() => route.path, () => {
   moreOpen.value = false
 })
 
+// 首页顶部透明，滚动后毛玻璃；非首页始终深色底
+const isHome = computed(() => {
+  const p = route.path.replace(/\/+$/, '')
+  return p === '' || p === '/en'
+})
+const transparent = computed(() => isHome.value && !scrolled.value)
+
+function onScroll() {
+  scrolled.value = window.scrollY > 40
+}
+
 function onPageClick(e: MouseEvent) {
   if (!(e.target as HTMLElement | null)?.closest?.('[data-more-menu]')) {
     moreOpen.value = false
   }
 }
-onMounted(() => document.addEventListener('click', onPageClick))
-onBeforeUnmount(() => document.removeEventListener('click', onPageClick))
+onMounted(() => {
+  document.addEventListener('click', onPageClick)
+  window.addEventListener('scroll', onScroll, { passive: true })
+  onScroll()
+})
+onBeforeUnmount(() => {
+  document.removeEventListener('click', onPageClick)
+  window.removeEventListener('scroll', onScroll)
+})
 
 function isActive(path: string): boolean {
-  if (path === '/') return route.path === '/'
+  if (path === '/') return route.path === '/' || route.path === '/en' || route.path === '/en/'
   return route.path.startsWith(path)
 }
 
@@ -54,16 +73,19 @@ function toggleLocale() {
 </script>
 
 <template>
-  <header class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-arsenal-line">
-    <div class="container-page h-16 flex items-center justify-between">
+  <header
+    class="fixed top-0 left-0 right-0 z-50 transition-colors duration-300"
+    :class="transparent ? 'bg-transparent' : 'bg-arsenal-night/90 backdrop-blur-md shadow-[0_1px_0_rgba(255,255,255,0.08)]'"
+  >
+    <div class="shell-wide h-[72px] flex items-center justify-between">
       <!-- Logo -->
-      <NuxtLink :to="localePath('/')" class="flex items-center gap-2.5 group">
+      <NuxtLink :to="localePath('/')" class="flex items-center gap-3 group">
         <img
           src="/images/badges/t3.png"
           alt="Arsenal"
-          class="w-8 h-8 transition-transform duration-300 group-hover:scale-110"
+          class="w-9 h-9 transition-transform duration-300 group-hover:scale-110"
         />
-        <span class="font-bold text-arsenal-ink text-lg tracking-tight">Arsenal Hub</span>
+        <span class="font-bold text-white text-lg tracking-tight">Arsenal Hub</span>
       </NuxtLink>
 
       <!-- Desktop Nav -->
@@ -72,13 +94,13 @@ function toggleLocale() {
           v-for="item in navItems"
           :key="item.key"
           :to="localePath(item.path)"
-          class="relative px-3.5 py-2 text-sm font-medium transition-colors"
-          :class="isActive(item.path) ? 'text-arsenal-ink' : 'text-arsenal-muted hover:text-arsenal-ink2'"
+          class="relative px-4 py-2 text-sm font-medium rounded-lg transition-colors"
+          :class="isActive(item.path) ? 'text-white' : 'text-white/75 hover:text-white hover:bg-white/10'"
         >
           {{ $t(item.label) }}
           <span
             v-if="isActive(item.path)"
-            class="absolute left-3.5 right-3.5 -bottom-px h-0.5 bg-arsenal-red rounded-full"
+            class="absolute left-4 right-4 -bottom-0.5 h-0.5 bg-arsenal-red rounded-full"
           />
         </NuxtLink>
 
@@ -86,8 +108,8 @@ function toggleLocale() {
         <div class="relative" data-more-menu>
           <button
             @click="moreOpen = !moreOpen"
-            class="relative px-3.5 py-2 text-sm font-medium transition-colors flex items-center gap-1"
-            :class="moreActive || moreOpen ? 'text-arsenal-ink' : 'text-arsenal-muted hover:text-arsenal-ink2'"
+            class="relative px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-1"
+            :class="moreActive || moreOpen ? 'text-white' : 'text-white/75 hover:text-white hover:bg-white/10'"
           >
             {{ $t('nav.more') }}
             <svg
@@ -99,7 +121,7 @@ function toggleLocale() {
             </svg>
             <span
               v-if="moreActive"
-              class="absolute left-3.5 right-3.5 -bottom-px h-0.5 bg-arsenal-red rounded-full"
+              class="absolute left-4 right-4 -bottom-0.5 h-0.5 bg-arsenal-red rounded-full"
             />
           </button>
           <Transition
@@ -111,13 +133,13 @@ function toggleLocale() {
             leave-to-class="opacity-0 -translate-y-1"
           >
             <div v-if="moreOpen" class="absolute right-0 top-full pt-2 z-50">
-              <div class="w-36 bg-white rounded-lg shadow-lg border border-arsenal-line py-1.5">
+              <div class="w-40 bg-arsenal-night-soft rounded-xl shadow-xl border border-white/10 py-1.5">
                 <NuxtLink
                   v-for="item in moreItems"
                   :key="item.key"
                   :to="localePath(item.path)"
-                  class="block px-4 py-2 text-sm transition-colors"
-                  :class="isActive(item.path) ? 'text-arsenal-red font-medium' : 'text-arsenal-muted hover:text-arsenal-ink hover:bg-arsenal-red-50/60'"
+                  class="block px-4 py-2 text-sm transition-colors rounded-lg mx-1.5"
+                  :class="isActive(item.path) ? 'text-arsenal-red font-medium' : 'text-white/70 hover:text-white hover:bg-white/10'"
                   @click="moreOpen = false"
                 >
                   {{ $t(item.label) }}
@@ -130,7 +152,7 @@ function toggleLocale() {
         <!-- Language Toggle -->
         <button
           @click="toggleLocale"
-          class="ml-3 px-3 py-1.5 text-xs font-medium text-arsenal-muted hover:text-arsenal-ink2 border border-arsenal-line rounded-md hover:border-gray-300 transition-colors"
+          class="ml-3 px-3.5 py-1.5 text-xs font-medium text-white/75 hover:text-white border border-white/20 rounded-lg hover:border-white/50 transition-colors"
         >
           {{ locale === 'zh' ? 'EN' : '中文' }}
         </button>
@@ -138,7 +160,7 @@ function toggleLocale() {
 
       <!-- Mobile Menu Button -->
       <button
-        class="md:hidden p-2 -mr-2 text-arsenal-ink2 hover:text-arsenal-ink"
+        class="md:hidden p-2 -mr-2 text-white"
         @click="mobileMenuOpen = !mobileMenuOpen"
         aria-label="Menu"
       >
@@ -160,21 +182,21 @@ function toggleLocale() {
       leave-from-class="opacity-100 translate-y-0"
       leave-to-class="opacity-0 -translate-y-2"
     >
-      <div v-if="mobileMenuOpen" class="md:hidden bg-white border-t border-arsenal-line">
-        <div class="container-page py-2">
+      <div v-if="mobileMenuOpen" class="md:hidden bg-arsenal-night/95 backdrop-blur-md border-t border-white/10">
+        <div class="shell-wide py-2">
           <NuxtLink
             v-for="item in mobileItems"
             :key="item.key"
             :to="localePath(item.path)"
-            class="block px-2 py-3 text-sm font-medium border-b border-arsenal-line2 last:border-0"
-            :class="isActive(item.path) ? 'text-arsenal-red' : 'text-arsenal-ink2'"
+            class="block px-2 py-3 text-sm font-medium border-b border-white/10 last:border-0 transition-colors"
+            :class="isActive(item.path) ? 'text-arsenal-red' : 'text-white/80 hover:text-white'"
             @click="mobileMenuOpen = false"
           >
             {{ $t(item.label) }}
           </NuxtLink>
           <button
             @click="toggleLocale"
-            class="w-full text-left px-2 py-3 text-sm font-medium text-arsenal-muted"
+            class="w-full text-left px-2 py-3 text-sm font-medium text-white/60 hover:text-white"
           >
             {{ locale === 'zh' ? 'English' : '简体中文' }}
           </button>

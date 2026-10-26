@@ -1,46 +1,53 @@
 <script setup lang="ts">
 const { t } = useI18n()
 const localePath = useLocalePath()
+
+const links = [
+  { path: '/', label: 'nav.home' },
+  { path: '/fixtures', label: 'nav.fixtures' },
+  { path: '/standings', label: 'nav.standings' },
+  { path: '/squad', label: 'nav.squad' },
+  { path: '/scorers', label: 'nav.scorers' },
+  { path: '/legends', label: 'nav.legends' },
+  { path: '/watch', label: 'nav.watch' },
+  { path: '/club', label: 'nav.club' },
+  { path: '/stadium', label: 'nav.stadium' },
+  { path: '/women', label: 'nav.women' }
+]
 </script>
 
 <template>
-  <footer class="border-t border-arsenal-line mt-auto">
-    <div class="container-page py-8">
-      <div class="flex flex-col gap-5">
-        <!-- Top row -->
-        <div class="flex flex-wrap items-center justify-between gap-4">
-          <div class="flex items-center gap-2.5">
-            <img
-              src="/images/badges/t3.png"
-              alt="Arsenal"
-              class="w-6 h-6"
-              loading="lazy"
-            />
-            <span class="font-semibold text-arsenal-ink text-sm">Arsenal Hub</span>
-          </div>
-          <nav class="flex flex-wrap gap-x-5 gap-y-2 text-xs text-arsenal-muted">
-            <NuxtLink :to="localePath('/')" class="hover:text-arsenal-ink transition-colors">{{ t('nav.home') }}</NuxtLink>
-            <NuxtLink :to="localePath('/fixtures')" class="hover:text-arsenal-ink transition-colors">{{ t('nav.fixtures') }}</NuxtLink>
-            <NuxtLink :to="localePath('/standings')" class="hover:text-arsenal-ink transition-colors">{{ t('nav.standings') }}</NuxtLink>
-            <NuxtLink :to="localePath('/squad')" class="hover:text-arsenal-ink transition-colors">{{ t('nav.squad') }}</NuxtLink>
-            <NuxtLink :to="localePath('/scorers')" class="hover:text-arsenal-ink transition-colors">{{ t('nav.scorers') }}</NuxtLink>
-            <NuxtLink :to="localePath('/legends')" class="hover:text-arsenal-ink transition-colors">{{ t('nav.legends') }}</NuxtLink>
-            <NuxtLink :to="localePath('/watch')" class="hover:text-arsenal-ink transition-colors">{{ t('nav.watch') }}</NuxtLink>
-            <NuxtLink :to="localePath('/club')" class="hover:text-arsenal-ink transition-colors">{{ t('nav.club') }}</NuxtLink>
-            <NuxtLink :to="localePath('/stadium')" class="hover:text-arsenal-ink transition-colors">{{ t('nav.stadium') }}</NuxtLink>
-            <NuxtLink :to="localePath('/women')" class="hover:text-arsenal-ink transition-colors">{{ t('nav.women') }}</NuxtLink>
-          </nav>
+  <footer class="bg-arsenal-night mt-auto">
+    <div class="shell-wide pt-16 pb-10">
+      <!-- Top row -->
+      <div class="flex flex-wrap items-center justify-between gap-6">
+        <div class="flex items-center gap-3">
+          <img
+            src="/images/badges/t3.png"
+            alt="Arsenal"
+            class="w-8 h-8"
+            loading="lazy"
+          />
+          <span class="font-bold text-white">Arsenal Hub</span>
         </div>
+        <nav class="flex flex-wrap gap-x-6 gap-y-2 text-[13px] text-white/55">
+          <NuxtLink
+            v-for="link in links"
+            :key="link.path"
+            :to="localePath(link.path)"
+            class="hover:text-white transition-colors"
+          >{{ t(link.label) }}</NuxtLink>
+        </nav>
+      </div>
 
-        <!-- Divider -->
-        <div class="divider" />
+      <!-- Divider -->
+      <div class="h-px bg-white/10 my-7"></div>
 
-        <!-- Bottom text -->
-        <div class="text-xs text-arsenal-subtle leading-relaxed space-y-2">
-          <p>{{ t('footer.disclaimer') }}</p>
-          <p>{{ t('footer.dataSource') }}</p>
-          <p class="text-arsenal-muted">{{ t('footer.copyright') }}</p>
-        </div>
+      <!-- Bottom text -->
+      <div class="text-xs leading-7 text-white/40 space-y-1">
+        <p>{{ t('footer.disclaimer') }}</p>
+        <p>{{ t('footer.dataSource') }}</p>
+        <p class="text-white/30">{{ t('footer.copyright') }}</p>
       </div>
     </div>
   </footer>
