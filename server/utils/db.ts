@@ -82,6 +82,31 @@ export async function dbRun(db: any, sql: string, params: any[] = []): Promise<a
   return db.prepare(sql).run(...params)
 }
 
+// 批量写入：D1 用 batch()（一次网络往返提交多条），better-sqlite3 用事务
+export async function dbBatch(db: any, statements: Array<{ sql: string; params?: any[] }>): Promise<void> {
+  if (!statements.length) return
+  if (isD1(db)) {
+    const stmts = statements.map(s =>
+      s.params?.length ? db.prepare(s.sql).bind(...s.params) : db.prepare(s.sql)
+    )
+    // 分批，避免单次请求过大
+    for (let i = 0; i < stmts.length; i += 80) {
+      await db.batch(stmts.slice(i, i + 80))
+    }
+    return
+  }
+  const tx = db.transaction((items: Array<{ sql: string; params?: any[] }>) => {
+    for (const s of items) {
+      if (s.params?.length) {
+        db.prepare(s.sql).run(...s.params)
+      } else {
+        db.prepare(s.sql).run()
+      }
+    }
+  })
+  tx(statements)
+}
+
 function initSchema(db: any) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS teams (

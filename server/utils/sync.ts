@@ -1,11 +1,17 @@
-// Data sync service - pulls from FPL and writes to DB
+// Data sync service - pulls from FPL / football-data and writes to DB
 // Sync intervals:
 //   teams:     30 days
 //   fixtures:  1 hour
 //   standings: 30 min
 //   players:   7 days
+//   cl_fixtures / cl_standings: 12 hours
+//
+// 设计要点：
+// 1. 所有写入用 dbBatch（D1 一次网络往返），避免逐条 await 造成几十秒阻塞
+// 2. 库里已有数据时，同步放到 Cloudflare waitUntil() 后台执行，请求立即返回
+//    只有库完全为空（首次部署）才阻塞同步，否则页面无数据可展示
 
-import { useDb, dbRun, dbAll, dbGet } from './db'
+import { useDb, dbRun, dbAll, dbGet, dbBatch } from './db'
 import {
   getFplBootstrap,
   getFplFixtures,
@@ -38,6 +44,11 @@ async function shouldSync(db: any, key: string, interval: number): Promise<boole
   return Date.now() - row.last_sync > interval
 }
 
+async function hasRows(db: any, table: string): Promise<boolean> {
+  const row = await dbGet(db, `SELECT 1 as x FROM ${table} LIMIT 1`)
+  return !!row
+}
+
 async function updateSyncTime(db: any, key: string) {
   await dbRun(db, `
     INSERT INTO sync_meta (key, last_sync, next_sync)
@@ -46,19 +57,32 @@ async function updateSyncTime(db: any, key: string) {
   `, [key, Date.now(), Date.now() + (SYNC_INTERVALS as any)[key] || 0])
 }
 
-// ===== Teams =====
-export async function syncTeams(event?: any, force = false): Promise<number> {
-  const db = useDb(event)
-  if (!force && !(await shouldSync(db, 'teams', SYNC_INTERVALS.teams))) {
-    return 0
-  }
+// 后台执行：Cloudflare waitUntil 保证请求返回后 Worker 不被回收
+const bgTriggered: Record<string, number> = {}
+const BG_GUARD_MS = 60 * 1000 // 1 分钟内同类型后台同步只触发一次，防并发风暴
 
+function runInBackground(event: any, key: string, fn: () => Promise<any>) {
+  const now = Date.now()
+  if (bgTriggered[key] && now - bgTriggered[key] < BG_GUARD_MS) return
+  bgTriggered[key] = now
+
+  const cfCtx = event?.context?.cloudflare?.context
+  if (cfCtx && typeof cfCtx.waitUntil === 'function') {
+    cfCtx.waitUntil(fn().catch((e: any) => console.error(`bg sync [${key}] failed:`, e)))
+  } else {
+    fn().catch((e: any) => console.error(`bg sync [${key}] failed:`, e))
+  }
+}
+
+// ===== Teams =====
+async function doSyncTeams(event?: any): Promise<number> {
+  const db = useDb(event)
   const bootstrap = await getFplBootstrap()
   if (!bootstrap?.teams) return 0
 
   const now = Date.now()
-  for (const t of bootstrap.teams) {
-    await dbRun(db, `
+  const statements = bootstrap.teams.map((t: any) => ({
+    sql: `
       INSERT INTO teams (id, name, short_name, code, badge_url, updated_at)
       VALUES (?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
@@ -67,19 +91,30 @@ export async function syncTeams(event?: any, force = false): Promise<number> {
         code = excluded.code,
         badge_url = excluded.badge_url,
         updated_at = excluded.updated_at
-    `, [t.id, t.name, t.short_name, t.code, getFplTeamBadge(t.code), now])
-  }
+    `,
+    params: [t.id, t.name, t.short_name, t.code, getFplTeamBadge(t.code), now]
+  }))
 
+  await dbBatch(db, statements)
   await updateSyncTime(db, 'teams')
   return bootstrap.teams.length
 }
 
-// ===== Fixtures =====
-export async function syncFixtures(event?: any, force = false): Promise<number> {
+export async function syncTeams(event?: any, force = false): Promise<number> {
   const db = useDb(event)
-  if (!force && !(await shouldSync(db, 'fixtures', SYNC_INTERVALS.fixtures))) {
-    return 0
+  if (!force) {
+    if (!(await shouldSync(db, 'teams', SYNC_INTERVALS.teams))) return 0
+    if (await hasRows(db, 'teams')) {
+      runInBackground(event, 'teams', () => doSyncTeams(event))
+      return 0
+    }
   }
+  return doSyncTeams(event)
+}
+
+// ===== Fixtures =====
+async function doSyncFixtures(event?: any): Promise<number> {
+  const db = useDb(event)
 
   await syncTeams(event)
 
@@ -87,8 +122,8 @@ export async function syncFixtures(event?: any, force = false): Promise<number> 
   if (!fixtures.length) return 0
 
   const now = Date.now()
-  for (const f of fixtures) {
-    await dbRun(db, `
+  const statements = fixtures.map((f: any) => ({
+    sql: `
       INSERT INTO fixtures (id, kickoff_time, event, team_h, team_a, team_h_score, team_a_score, finished, started, minutes, stats, updated_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       ON CONFLICT(id) DO UPDATE SET
@@ -101,32 +136,44 @@ export async function syncFixtures(event?: any, force = false): Promise<number> 
         minutes = excluded.minutes,
         stats = excluded.stats,
         updated_at = excluded.updated_at
-    `, [
+    `,
+    params: [
       f.id, f.kickoff_time, f.event || null, f.team_h, f.team_a,
       f.team_h_score, f.team_a_score,
       f.finished ? 1 : 0, f.started ? 1 : 0, f.minutes || 0,
       f.stats ? JSON.stringify(f.stats) : null, now
-    ])
-  }
+    ]
+  }))
 
+  await dbBatch(db, statements)
   await updateSyncTime(db, 'fixtures')
+
+  // 比分更新后顺带重算积分榜（读取的是刚写入的 DB 数据）
+  doSyncStandings(event).catch(() => {})
   return fixtures.length
 }
 
-// ===== Standings =====
-export async function syncStandings(event?: any, force = false): Promise<number> {
+export async function syncFixtures(event?: any, force = false): Promise<number> {
   const db = useDb(event)
-  const fixturesUpdated = await syncFixtures(event)
-
-  if (!force && !(await shouldSync(db, 'standings', SYNC_INTERVALS.standings))) {
-    if (!fixturesUpdated) return 0
+  if (!force) {
+    if (!(await shouldSync(db, 'fixtures', SYNC_INTERVALS.fixtures))) return 0
+    if (await hasRows(db, 'fixtures')) {
+      runInBackground(event, 'fixtures', () => doSyncFixtures(event))
+      return 0
+    }
   }
+  return doSyncFixtures(event)
+}
 
-  const teams = await dbAll(db, 'SELECT id, name, code FROM teams ORDER BY id')
+// ===== Standings =====
+async function doSyncStandings(event?: any): Promise<number> {
+  const db = useDb(event)
+
+  let teams = await dbAll(db, 'SELECT id, name, code FROM teams ORDER BY id')
   if (!teams.length) {
-    const synced = await syncTeams(event, true)
+    const synced = await doSyncTeams(event)
     if (!synced) return 0
-    return syncStandings(event, true)
+    teams = await dbAll(db, 'SELECT id, name, code FROM teams ORDER BY id')
   }
 
   const fixtures = await dbAll(db, `
@@ -166,25 +213,40 @@ export async function syncStandings(event?: any, force = false): Promise<number>
   })
 
   const now = Date.now()
-  for (let i = 0; i < sorted.length; i++) {
-    const r = sorted[i] as any
+  const statements = sorted.map((r: any, i: number) => {
     r.position = i + 1
     r.goal_difference = r.goals_for - r.goals_against
-    await dbRun(db, `
-      INSERT INTO standings (team_id, position, points, played, win, draw, loss, goals_for, goals_against, goal_difference, form, updated_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(team_id) DO UPDATE SET
-        position = excluded.position, points = excluded.points,
-        played = excluded.played, win = excluded.win, draw = excluded.draw,
-        loss = excluded.loss, goals_for = excluded.goals_for,
-        goals_against = excluded.goals_against, goal_difference = excluded.goal_difference,
-        form = excluded.form, updated_at = excluded.updated_at
-    `, [r.team_id, r.position, r.points, r.played, r.win, r.draw, r.loss,
-        r.goals_for, r.goals_against, r.goal_difference, r.form, now])
-  }
+    return {
+      sql: `
+        INSERT INTO standings (team_id, position, points, played, win, draw, loss, goals_for, goals_against, goal_difference, form, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(team_id) DO UPDATE SET
+          position = excluded.position, points = excluded.points,
+          played = excluded.played, win = excluded.win, draw = excluded.draw,
+          loss = excluded.loss, goals_for = excluded.goals_for,
+          goals_against = excluded.goals_against, goal_difference = excluded.goal_difference,
+          form = excluded.form, updated_at = excluded.updated_at
+      `,
+      params: [r.team_id, r.position, r.points, r.played, r.win, r.draw, r.loss,
+        r.goals_for, r.goals_against, r.goal_difference, r.form, now]
+    }
+  })
 
+  await dbBatch(db, statements)
   await updateSyncTime(db, 'standings')
   return sorted.length
+}
+
+export async function syncStandings(event?: any, force = false): Promise<number> {
+  const db = useDb(event)
+  if (!force) {
+    if (!(await shouldSync(db, 'standings', SYNC_INTERVALS.standings))) return 0
+    if (await hasRows(db, 'standings')) {
+      runInBackground(event, 'standings', () => doSyncStandings(event))
+      return 0
+    }
+  }
+  return doSyncStandings(event)
 }
 
 // ===== Players =====
@@ -195,109 +257,123 @@ function isDepartedPlayer(news: string): boolean {
   return !!news && DEPARTED_NEWS_PATTERN.test(news)
 }
 
-export async function syncPlayers(event?: any, force = false): Promise<number> {
+async function doSyncPlayers(event?: any): Promise<number> {
   const db = useDb(event)
-  if (!force && !(await shouldSync(db, 'players', SYNC_INTERVALS.players))) {
-    return 0
-  }
-
   const bootstrap = await getFplBootstrap()
   if (!bootstrap?.elements) return 0
 
   await syncTeams(event)
 
-  // 清理官方已标记离队的阿森纳球员(及其历史)
+  const now = Date.now()
+  const active = bootstrap.elements.filter((p: any) => !isDepartedPlayer(p.news || ''))
+
+  // 1. 清理已离队球员（批量）
   const departedIds = bootstrap.elements
     .filter((p: any) => p.team === ARSENAL_FPL_ID && isDepartedPlayer(p.news || ''))
     .map((p: any) => p.id)
-  for (const id of departedIds) {
-    await dbRun(db, 'DELETE FROM player_history WHERE player_id = ?', [id])
-    await dbRun(db, 'DELETE FROM players WHERE id = ?', [id])
-  }
-
-  const now = Date.now()
-  const active = bootstrap.elements.filter((p: any) => !isDepartedPlayer(p.news || ''))
-  for (const p of active) {
-    const photoUrl = p.code
-      ? `https://resources.premierleague.com/premierleague/photos/players/110x140/p${String(p.code).padStart(6, '0')}.png`
-      : null
-
-    const starts = p.starts || 0
-    const minutes = p.minutes || 0
-
-    await dbRun(db, `
-      INSERT INTO players (
-        id, team_id, first_name, second_name, web_name, element_type,
-        squad_number, photo_url, nationality, age, news,
-        appearances, starts, minutes, goals_scored, assists, clean_sheets,
-        goals_conceded, yellow_cards, red_cards, saves, bps, form, total_points,
-        points_per_game, now_cost, selected_by_percent, influence, creativity, threat, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ON CONFLICT(id) DO UPDATE SET
-        team_id = excluded.team_id, first_name = excluded.first_name,
-        second_name = excluded.second_name, web_name = excluded.web_name,
-        element_type = excluded.element_type,
-        photo_url = excluded.photo_url,
-        news = excluded.news,
-        appearances = excluded.appearances, starts = excluded.starts,
-        minutes = excluded.minutes, goals_scored = excluded.goals_scored,
-        assists = excluded.assists, clean_sheets = excluded.clean_sheets,
-        goals_conceded = excluded.goals_conceded, yellow_cards = excluded.yellow_cards,
-        red_cards = excluded.red_cards, saves = excluded.saves, bps = excluded.bps,
-        form = excluded.form, total_points = excluded.total_points,
-        points_per_game = excluded.points_per_game, now_cost = excluded.now_cost,
-        selected_by_percent = excluded.selected_by_percent,
-        influence = excluded.influence, creativity = excluded.creativity,
-        threat = excluded.threat, updated_at = excluded.updated_at
-    `, [
-      p.id, p.team, p.first_name, p.second_name, p.web_name, p.element_type,
-      p.squad_number || null, photoUrl, p.nationality || null,
-      p.age || null, p.news || '',
-      starts, starts, minutes, p.goals_scored || 0, p.assists || 0,
-      p.clean_sheets || 0, p.goals_conceded || 0,
-      p.yellow_cards || 0, p.red_cards || 0, p.saves || 0, p.bps || 0,
-      p.form || '0', p.total_points || 0, p.points_per_game || '0',
-      p.now_cost || 0, p.selected_by_percent || '0',
-      p.influence || '0', p.creativity || '0', p.threat || '0', now
+  if (departedIds.length) {
+    await dbBatch(db, [
+      ...departedIds.map((id: number) => ({
+        sql: 'DELETE FROM player_history WHERE player_id = ?',
+        params: [id]
+      })),
+      ...departedIds.map((id: number) => ({
+        sql: 'DELETE FROM players WHERE id = ?',
+        params: [id]
+      }))
     ])
   }
 
-  // Sync player history for Arsenal players
-  const arsenalPlayers = active.filter((p: any) => p.team === ARSENAL_FPL_ID)
-  for (const p of arsenalPlayers) {
-    try {
-      const summary = await $fetch(
-        `https://fantasy.premierleague.com/api/element-summary/${p.id}/`,
-        { timeout: 6000 }
-      ) as any
+  // 2. 全部球员基础数据（批量，一次往返写入）
+  const playerStatements = active.map((p: any) => {
+    const photoUrl = p.code
+      ? `https://resources.premierleague.com/premierleague/photos/players/110x140/p${String(p.code).padStart(6, '0')}.png`
+      : null
+    const starts = p.starts || 0
+    const minutes = p.minutes || 0
 
-      for (const h of (summary.history || [])) {
-        await dbRun(db, `
-          INSERT INTO player_history (
-            player_id, fixture_id, event, opponent_team, was_home,
-            minutes, goals_scored, assists, clean_sheets, yellow_cards,
-            red_cards, bonus, total_points, updated_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-          ON CONFLICT(player_id, fixture_id) DO UPDATE SET
-            minutes = excluded.minutes, goals_scored = excluded.goals_scored,
-            assists = excluded.assists, clean_sheets = excluded.clean_sheets,
-            yellow_cards = excluded.yellow_cards, red_cards = excluded.red_cards,
-            bonus = excluded.bonus, total_points = excluded.total_points,
-            updated_at = excluded.updated_at
-        `, [
-          p.id, h.fixture, h.round || h.event, h.opponent_team,
-          h.was_home ? 1 : 0,
-          h.minutes || 0, h.goals_scored || 0, h.assists || 0,
-          h.clean_sheets || 0, h.yellow_cards || 0, h.red_cards || 0,
-          h.bonus || 0, h.total_points || 0, now
-        ])
-      }
-    } catch (e) {
-      // Skip failed player
+    return {
+      sql: `
+        INSERT INTO players (
+          id, team_id, first_name, second_name, web_name, element_type,
+          squad_number, photo_url, nationality, age, news,
+          appearances, starts, minutes, goals_scored, assists, clean_sheets,
+          goals_conceded, yellow_cards, red_cards, saves, bps, form, total_points,
+          points_per_game, now_cost, selected_by_percent, influence, creativity, threat, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(id) DO UPDATE SET
+          team_id = excluded.team_id, first_name = excluded.first_name,
+          second_name = excluded.second_name, web_name = excluded.web_name,
+          element_type = excluded.element_type,
+          photo_url = excluded.photo_url,
+          news = excluded.news,
+          appearances = excluded.appearances, starts = excluded.starts,
+          minutes = excluded.minutes, goals_scored = excluded.goals_scored,
+          assists = excluded.assists, clean_sheets = excluded.clean_sheets,
+          goals_conceded = excluded.goals_conceded, yellow_cards = excluded.yellow_cards,
+          red_cards = excluded.red_cards, saves = excluded.saves, bps = excluded.bps,
+          form = excluded.form, total_points = excluded.total_points,
+          points_per_game = excluded.points_per_game, now_cost = excluded.now_cost,
+          selected_by_percent = excluded.selected_by_percent,
+          influence = excluded.influence, creativity = excluded.creativity,
+          threat = excluded.threat, updated_at = excluded.updated_at
+      `,
+      params: [
+        p.id, p.team, p.first_name, p.second_name, p.web_name, p.element_type,
+        p.squad_number || null, photoUrl, p.nationality || null,
+        p.age || null, p.news || '',
+        starts, starts, minutes, p.goals_scored || 0, p.assists || 0,
+        p.clean_sheets || 0, p.goals_conceded || 0,
+        p.yellow_cards || 0, p.red_cards || 0, p.saves || 0, p.bps || 0,
+        p.form || '0', p.total_points || 0, p.points_per_game || '0',
+        p.now_cost || 0, p.selected_by_percent || '0',
+        p.influence || '0', p.creativity || '0', p.threat || '0', now
+      ]
     }
+  })
+  await dbBatch(db, playerStatements)
+
+  // 3. 阿森纳球员逐场历史：每球员一个 batch，5 个球员并发一组
+  const arsenalPlayers = active.filter((p: any) => p.team === ARSENAL_FPL_ID)
+  for (let i = 0; i < arsenalPlayers.length; i += 5) {
+    const group = arsenalPlayers.slice(i, i + 5)
+    await Promise.all(group.map(async (p: any) => {
+      try {
+        const summary = await $fetch(
+          `https://fantasy.premierleague.com/api/element-summary/${p.id}/`,
+          { timeout: 8000 }
+        ) as any
+        const history = summary.history || []
+        if (!history.length) return
+        await dbBatch(db, history.map((h: any) => ({
+          sql: `
+            INSERT INTO player_history (
+              player_id, fixture_id, event, opponent_team, was_home,
+              minutes, goals_scored, assists, clean_sheets, yellow_cards,
+              red_cards, bonus, total_points, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(player_id, fixture_id) DO UPDATE SET
+              minutes = excluded.minutes, goals_scored = excluded.goals_scored,
+              assists = excluded.assists, clean_sheets = excluded.clean_sheets,
+              yellow_cards = excluded.yellow_cards, red_cards = excluded.red_cards,
+              bonus = excluded.bonus, total_points = excluded.total_points,
+              updated_at = excluded.updated_at
+          `,
+          params: [
+            p.id, h.fixture, h.round || h.event, h.opponent_team,
+            h.was_home ? 1 : 0,
+            h.minutes || 0, h.goals_scored || 0, h.assists || 0,
+            h.clean_sheets || 0, h.yellow_cards || 0, h.red_cards || 0,
+            h.bonus || 0, h.total_points || 0, now
+          ]
+        })))
+      } catch (e) {
+        // 跳过失败的球员
+      }
+    }))
   }
 
-  // Recalculate appearances from history
+  // 4. 用历史记录重算出场次数
   await dbRun(db, `
     UPDATE players
     SET appearances = (
@@ -311,12 +387,21 @@ export async function syncPlayers(event?: any, force = false): Promise<number> {
   return bootstrap.elements.length
 }
 
-// ===== Champions League =====
-export async function syncCLFixtures(event?: any, force = false): Promise<number> {
+export async function syncPlayers(event?: any, force = false): Promise<number> {
   const db = useDb(event)
-  if (!force && !(await shouldSync(db, 'cl_fixtures', SYNC_INTERVALS.cl_fixtures))) {
-    return 0
+  if (!force) {
+    if (!(await shouldSync(db, 'players', SYNC_INTERVALS.players))) return 0
+    if (await hasRows(db, 'players')) {
+      runInBackground(event, 'players', () => doSyncPlayers(event))
+      return 0
+    }
   }
+  return doSyncPlayers(event)
+}
+
+// ===== Champions League =====
+async function doSyncCLFixtures(event?: any): Promise<number> {
+  const db = useDb(event)
 
   let matches: any[]
   try {
@@ -382,8 +467,8 @@ export async function syncCLFixtures(event?: any, force = false): Promise<number
     }
   }
 
-  for (const r of batch) {
-    await dbRun(db, `
+  const statements = batch.map((r: any) => ({
+    sql: `
       INSERT INTO cl_fixtures (
         id, kickoff_time, stage, group_name, matchday,
         team_h, team_h_name, team_a, team_a_name,
@@ -407,13 +492,15 @@ export async function syncCLFixtures(event?: any, force = false): Promise<number
         home_logo = excluded.home_logo,
         away_logo = excluded.away_logo,
         updated_at = excluded.updated_at
-    `, [
+    `,
+    params: [
       r.id, r.kickoff_time, r.stage, r.group_name, r.matchday,
       r.team_h, r.team_h_name, r.team_a, r.team_a_name,
       r.team_h_score, r.team_a_score, r.winner, r.status, r.details,
       r.home_logo, r.away_logo, now
-    ])
-  }
+    ]
+  }))
+  await dbBatch(db, statements)
 
   // 移除已不在当前赛程里的历史场次 (欧冠已过去的淘汰赛阶段 或 上赛季残留)
   if (seen.size) {
@@ -426,13 +513,21 @@ export async function syncCLFixtures(event?: any, force = false): Promise<number
   return batch.length
 }
 
-export async function syncCLStandings(event?: any, force = false): Promise<number> {
+export async function syncCLFixtures(event?: any, force = false): Promise<number> {
   const db = useDb(event)
-  await syncCLFixtures(event, force)
-
-  if (!force && !(await shouldSync(db, 'cl_standings', SYNC_INTERVALS.cl_standings))) {
-    return 0
+  if (!force) {
+    if (!(await shouldSync(db, 'cl_fixtures', SYNC_INTERVALS.cl_fixtures))) return 0
+    if (await hasRows(db, 'cl_fixtures')) {
+      runInBackground(event, 'cl_fixtures', () => doSyncCLFixtures(event))
+      return 0
+    }
   }
+  return doSyncCLFixtures(event)
+}
+
+async function doSyncCLStandings(event?: any): Promise<number> {
+  const db = useDb(event)
+  await syncCLFixtures(event, true)
 
   let standings: any[]
   try {
@@ -446,8 +541,8 @@ export async function syncCLStandings(event?: any, force = false): Promise<numbe
 
   const now = Date.now()
   const stage = standings[0]?.stage
-  for (const row of table) {
-    await dbRun(db, `
+  const statements = table.map((row: any) => ({
+    sql: `
       INSERT INTO cl_standings (
         team_id, stage, position, team_name, logo, played, win, draw, loss,
         goals_for, goals_against, goal_difference, points, form, updated_at
@@ -467,17 +562,31 @@ export async function syncCLStandings(event?: any, force = false): Promise<numbe
         points = excluded.points,
         form = excluded.form,
         updated_at = excluded.updated_at
-    `, [
+    `,
+    params: [
       row.team.id, stage, row.position, row.team.name,
       getFdCrestLocal(row.team.id),
       row.playedGames || 0, row.won || 0, row.draw || 0, row.lost || 0,
       row.goalsFor || 0, row.goalsAgainst || 0, row.goalDifference || 0,
       row.points || 0, row.form || '', now
-    ])
-  }
+    ]
+  }))
+  await dbBatch(db, statements)
 
   await updateSyncTime(db, 'cl_standings')
   return table.length
+}
+
+export async function syncCLStandings(event?: any, force = false): Promise<number> {
+  const db = useDb(event)
+  if (!force) {
+    if (!(await shouldSync(db, 'cl_standings', SYNC_INTERVALS.cl_standings))) return 0
+    if (await hasRows(db, 'cl_standings')) {
+      runInBackground(event, 'cl_standings', () => doSyncCLStandings(event))
+      return 0
+    }
+  }
+  return doSyncCLStandings(event)
 }
 
 // ===== Full sync =====
