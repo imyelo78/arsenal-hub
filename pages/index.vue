@@ -5,10 +5,12 @@ const { t, locale } = useI18n()
 const localePath = useLocalePath()
 
 const { data: nextMatchData } = await useFetch('/api/next-match')
+const { data: clNextData } = await useFetch('/api/next-match?comp=cl')
 const { data: lastResultsData } = await useFetch('/api/last-results')
 const { data: clStandingsData } = await useFetch('/api/standings?comp=cl')
 
 const nextMatch = computed(() => nextMatchData.value?.nextMatch || null)
+const clNextMatch = computed(() => clNextData.value?.nextMatch || null)
 const recentResults = computed(() => lastResultsData.value?.results || [])
 const clStandings = computed(() => clStandingsData.value?.response || [])
 const arsenalCl = computed(() =>
@@ -76,15 +78,27 @@ const loc = computed(() => (locale.value === 'zh' ? 'zh-CN' : 'en-US'))
 
 const homeTeam = computed(() => nextMatch.value?.teams?.home || null)
 const awayTeam = computed(() => nextMatch.value?.teams?.away || null)
-const matchDateLabel = computed(() => {
-  if (!matchDate.value) return ''
-  return matchDate.value.toLocaleString(loc.value, {
+
+function fmtDateTime(d: Date) {
+  return d.toLocaleString(loc.value, {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit'
   })
+}
+
+const matchDateLabel = computed(() => {
+  if (!matchDate.value) return ''
+  return fmtDateTime(matchDate.value)
 })
+
+function clRoundLabel(m: any) {
+  const round = m?.league?.round
+  if (!round) return locale.value === 'zh' ? '欧冠' : 'UCL'
+  if (round === 'LEAGUE_STAGE') return locale.value === 'zh' ? '欧冠·联赛阶段' : 'UCL · League Stage'
+  return `${locale.value === 'zh' ? '欧冠' : 'UCL'} · ${String(round).replace(/_/g, ' ')}`
+}
 const matchdayLabel = computed(() => {
   const round = nextMatch.value?.league?.round || nextMatch.value?.fixture?.round
   if (!round) return ''
@@ -133,7 +147,6 @@ const uclGoals = computed(
 const uclNote = computed(() =>
   (arsenalCl.value?.rank ?? 99) <= 8 ? t('home.uclTop8') : t('home.uclBehind')
 )
-const isNextUcl = computed(() => nextMatch.value?.league?.id === 2001)
 
 // ===== Quick links =====
 const quickLinks = computed(() => [
@@ -251,7 +264,7 @@ const quickLinks = computed(() => [
     </section>
 
     <!-- ===== UCL ===== -->
-    <section v-if="arsenalCl" class="section ucl">
+    <section v-if="arsenalCl || clNextMatch" class="section ucl">
       <div class="shell-wide">
         <div class="sec-head reveal">
           <div class="sec-title">
@@ -264,7 +277,7 @@ const quickLinks = computed(() => [
         </div>
 
         <div class="ucl-grid">
-          <div class="card-dark ucl-card reveal">
+          <div v-if="arsenalCl" class="card-dark ucl-card reveal">
             <div class="ucl-kicker">{{ t('home.uclKicker') }}</div>
             <div class="ucl-rank">
               <b>#{{ arsenalCl.rank }}</b>
@@ -279,15 +292,15 @@ const quickLinks = computed(() => [
             </div>
           </div>
 
-          <div v-if="isNextUcl && homeTeam && awayTeam" class="card-dark ucl-card ucl-next reveal">
+          <div v-if="clNextMatch" class="card-dark ucl-card ucl-next reveal">
             <div class="ucl-kicker ucl-center">{{ t('home.uclNextKicker') }}</div>
             <div class="matchline">
-              <img v-if="homeTeam.logo" :src="homeTeam.logo" :alt="homeTeam.name" />
+              <img v-if="clNextMatch.teams.home.logo" :src="clNextMatch.teams.home.logo" :alt="clNextMatch.teams.home.name" />
               <span class="vs">VS</span>
-              <img v-if="awayTeam.logo" :src="awayTeam.logo" :alt="awayTeam.name" />
+              <img v-if="clNextMatch.teams.away.logo" :src="clNextMatch.teams.away.logo" :alt="clNextMatch.teams.away.name" />
             </div>
             <div class="ucl-when">
-              <b>{{ matchDateLabel }}</b><br />{{ matchdayLabel }}
+              <b>{{ fmtDateTime(new Date(clNextMatch.fixture.date)) }}</b><br />{{ clRoundLabel(clNextMatch) }}
             </div>
             <div class="ucl-cta">
               <NuxtLink :to="localePath('/fixtures')" class="btn-red">{{ t('home.goFixtures') }}</NuxtLink>

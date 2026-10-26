@@ -4,14 +4,17 @@ import { ARSENAL_FPL_ID, matchGraceCutoff } from '../utils/fpl'
 import { ARSENAL_FD_ID, CL_COMPETITION_LOGO } from '../utils/football-data'
 
 export default defineEventHandler(async (event) => {
-  await syncFixtures(event)
+  const query = getQuery(event)
+  const onlyCl = query.comp === 'cl'
+
+  if (!onlyCl) await syncFixtures(event)
   await syncCLFixtures(event)
 
   const db = useDb(event)
 
   // 只有"未开始且未到开球时间"或"正在比赛中(开球未超 4h 宽限期)"的才算下场比赛,
   // 防止数据源 finished 标记卡住时把已结束的比赛当成下一场
-  const plRow = await dbGet(db, `
+  const plRow = onlyCl ? null : await dbGet(db, `
     SELECT
       f.id, f.kickoff_time, f.event, f.team_h, f.team_a,
       f.team_h_score, f.team_a_score, f.finished, f.started, f.minutes,
@@ -40,9 +43,11 @@ export default defineEventHandler(async (event) => {
     LIMIT 1
   `, [ARSENAL_FD_ID, ARSENAL_FD_ID])
 
-  // 取时间最早的一个
+  // 取时间最早的一个；comp=cl 时只取欧冠下一场
   let nextMatch: any = null
-  if (plRow && clRow) {
+  if (onlyCl) {
+    nextMatch = clRow ? { source: 'cl', row: clRow } : null
+  } else if (plRow && clRow) {
     nextMatch = plRow.kickoff_time <= clRow.kickoff_time
       ? { source: 'pl', row: plRow }
       : { source: 'cl', row: clRow }
