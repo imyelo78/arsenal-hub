@@ -8,14 +8,17 @@
 //
 // 设计要点：
 // 1. 所有写入用 dbBatch（D1 一次网络往返），避免逐条 await 造成几十秒阻塞
-// 2. 库里已有数据时，同步放到 Cloudflare waitUntil() 后台执行，请求立即返回
-//    只有库完全为空（首次部署）才阻塞同步，否则页面无数据可展示
+// 2. 同步在请求内联执行：只有到达同步间隔才真正拉取外部数据，其余请求零开销；
+//    不再依赖 Cloudflare waitUntil（后台任务在 Pages 上不可靠，会静默丢失）
+// 3. 同 key 并发请求共享同一个同步 Promise，防止重复拉取/重复写入
+// 4. 比赛结束判定加宽限期：开球 4 小时后即使数据源 finished 仍为 false，也按已完赛处理
 
 import { useDb, dbRun, dbAll, dbGet, dbBatch } from './db'
 import {
   getFplBootstrap,
   getFplFixtures,
   getFplTeamBadge,
+  matchGraceCutoff,
   ARSENAL_FPL_ID
 } from './fpl'
 import {
@@ -44,11 +47,6 @@ async function shouldSync(db: any, key: string, interval: number): Promise<boole
   return Date.now() - row.last_sync > interval
 }
 
-async function hasRows(db: any, table: string): Promise<boolean> {
-  const row = await dbGet(db, `SELECT 1 as x FROM ${table} LIMIT 1`)
-  return !!row
-}
-
 async function updateSyncTime(db: any, key: string) {
   await dbRun(db, `
     INSERT INTO sync_meta (key, last_sync, next_sync)
@@ -57,21 +55,17 @@ async function updateSyncTime(db: any, key: string) {
   `, [key, Date.now(), Date.now() + (SYNC_INTERVALS as any)[key] || 0])
 }
 
-// 后台执行：Cloudflare waitUntil 保证请求返回后 Worker 不被回收
-const bgTriggered: Record<string, number> = {}
-const BG_GUARD_MS = 60 * 1000 // 1 分钟内同类型后台同步只触发一次，防并发风暴
+// 同步在请求内联执行；同 key 并发请求共享同一个 Promise，防止重复拉取/重复写入
+const inFlight: Record<string, Promise<any>> = {}
 
-function runInBackground(event: any, key: string, fn: () => Promise<any>) {
-  const now = Date.now()
-  if (bgTriggered[key] && now - bgTriggered[key] < BG_GUARD_MS) return
-  bgTriggered[key] = now
-
-  const cfCtx = event?.context?.cloudflare?.context
-  if (cfCtx && typeof cfCtx.waitUntil === 'function') {
-    cfCtx.waitUntil(fn().catch((e: any) => console.error(`bg sync [${key}] failed:`, e)))
-  } else {
-    fn().catch((e: any) => console.error(`bg sync [${key}] failed:`, e))
+function runSync(key: string, fn: () => Promise<any>): Promise<any> {
+  if (!inFlight[key]) {
+    inFlight[key] = fn().catch((e: any) => {
+      console.error(`sync [${key}] failed:`, e)
+      throw e
+    }).finally(() => { delete inFlight[key] })
   }
+  return inFlight[key]
 }
 
 // ===== Teams =====
@@ -102,14 +96,8 @@ async function doSyncTeams(event?: any): Promise<number> {
 
 export async function syncTeams(event?: any, force = false): Promise<number> {
   const db = useDb(event)
-  if (!force) {
-    if (!(await shouldSync(db, 'teams', SYNC_INTERVALS.teams))) return 0
-    if (await hasRows(db, 'teams')) {
-      runInBackground(event, 'teams', () => doSyncTeams(event))
-      return 0
-    }
-  }
-  return doSyncTeams(event)
+  if (!force && !(await shouldSync(db, 'teams', SYNC_INTERVALS.teams))) return 0
+  return runSync('teams', () => doSyncTeams(event))
 }
 
 // ===== Fixtures =====
@@ -155,14 +143,8 @@ async function doSyncFixtures(event?: any): Promise<number> {
 
 export async function syncFixtures(event?: any, force = false): Promise<number> {
   const db = useDb(event)
-  if (!force) {
-    if (!(await shouldSync(db, 'fixtures', SYNC_INTERVALS.fixtures))) return 0
-    if (await hasRows(db, 'fixtures')) {
-      runInBackground(event, 'fixtures', () => doSyncFixtures(event))
-      return 0
-    }
-  }
-  return doSyncFixtures(event)
+  if (!force && !(await shouldSync(db, 'fixtures', SYNC_INTERVALS.fixtures))) return 0
+  return runSync('fixtures', () => doSyncFixtures(event))
 }
 
 // ===== Standings =====
@@ -176,10 +158,12 @@ async function doSyncStandings(event?: any): Promise<number> {
     teams = await dbAll(db, 'SELECT id, name, code FROM teams ORDER BY id')
   }
 
+  // 开球超过宽限期(4h)且已开赛的比赛按完赛计, 防止数据源 finished 标记卡住
   const fixtures = await dbAll(db, `
     SELECT team_h, team_a, team_h_score, team_a_score
-    FROM fixtures WHERE finished = 1
-  `)
+    FROM fixtures
+    WHERE finished = 1 OR (started = 1 AND datetime(kickoff_time) < datetime(?))
+  `, [matchGraceCutoff()])
 
   const table: Record<number, any> = {}
   for (const t of teams) {
@@ -239,14 +223,8 @@ async function doSyncStandings(event?: any): Promise<number> {
 
 export async function syncStandings(event?: any, force = false): Promise<number> {
   const db = useDb(event)
-  if (!force) {
-    if (!(await shouldSync(db, 'standings', SYNC_INTERVALS.standings))) return 0
-    if (await hasRows(db, 'standings')) {
-      runInBackground(event, 'standings', () => doSyncStandings(event))
-      return 0
-    }
-  }
-  return doSyncStandings(event)
+  if (!force && !(await shouldSync(db, 'standings', SYNC_INTERVALS.standings))) return 0
+  return runSync('standings', () => doSyncStandings(event))
 }
 
 // ===== Players =====
@@ -389,14 +367,8 @@ async function doSyncPlayers(event?: any): Promise<number> {
 
 export async function syncPlayers(event?: any, force = false): Promise<number> {
   const db = useDb(event)
-  if (!force) {
-    if (!(await shouldSync(db, 'players', SYNC_INTERVALS.players))) return 0
-    if (await hasRows(db, 'players')) {
-      runInBackground(event, 'players', () => doSyncPlayers(event))
-      return 0
-    }
-  }
-  return doSyncPlayers(event)
+  if (!force && !(await shouldSync(db, 'players', SYNC_INTERVALS.players))) return 0
+  return runSync('players', () => doSyncPlayers(event))
 }
 
 // ===== Champions League =====
@@ -515,14 +487,8 @@ async function doSyncCLFixtures(event?: any): Promise<number> {
 
 export async function syncCLFixtures(event?: any, force = false): Promise<number> {
   const db = useDb(event)
-  if (!force) {
-    if (!(await shouldSync(db, 'cl_fixtures', SYNC_INTERVALS.cl_fixtures))) return 0
-    if (await hasRows(db, 'cl_fixtures')) {
-      runInBackground(event, 'cl_fixtures', () => doSyncCLFixtures(event))
-      return 0
-    }
-  }
-  return doSyncCLFixtures(event)
+  if (!force && !(await shouldSync(db, 'cl_fixtures', SYNC_INTERVALS.cl_fixtures))) return 0
+  return runSync('cl_fixtures', () => doSyncCLFixtures(event))
 }
 
 async function doSyncCLStandings(event?: any): Promise<number> {
@@ -579,14 +545,8 @@ async function doSyncCLStandings(event?: any): Promise<number> {
 
 export async function syncCLStandings(event?: any, force = false): Promise<number> {
   const db = useDb(event)
-  if (!force) {
-    if (!(await shouldSync(db, 'cl_standings', SYNC_INTERVALS.cl_standings))) return 0
-    if (await hasRows(db, 'cl_standings')) {
-      runInBackground(event, 'cl_standings', () => doSyncCLStandings(event))
-      return 0
-    }
-  }
-  return doSyncCLStandings(event)
+  if (!force && !(await shouldSync(db, 'cl_standings', SYNC_INTERVALS.cl_standings))) return 0
+  return runSync('cl_standings', () => doSyncCLStandings(event))
 }
 
 // ===== Full sync =====

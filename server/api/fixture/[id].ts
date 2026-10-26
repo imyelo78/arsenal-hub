@@ -1,6 +1,7 @@
 import { useDb, dbGet, dbAll } from '../../utils/db'
 import { syncFixtures, syncCLFixtures } from '../../utils/sync'
 import { ARSENAL_FD_ID, CL_COMPETITION_LOGO } from '../../utils/football-data'
+import { isMatchOver } from '../../utils/fpl'
 
 export default defineEventHandler(async (event) => {
   const rawId = getRouterParam(event, 'id')
@@ -153,7 +154,7 @@ export default defineEventHandler(async (event) => {
       date: row.kickoff_time,
       venue: null,
       status: {
-        short: row.finished ? 'FT' : row.started ? 'LIVE' : 'NS',
+        short: isMatchOver(row) ? 'FT' : row.started ? 'LIVE' : 'NS',
         elapsed: row.minutes || 0
       }
     },
@@ -171,7 +172,7 @@ export default defineEventHandler(async (event) => {
       home: row.started ? row.team_h_score : null,
       away: row.started ? row.team_a_score : null
     },
-    status: row.finished ? 'FT' : row.started ? 'LIVE' : 'NS',
+    status: isMatchOver(row) ? 'FT' : row.started ? 'LIVE' : 'NS',
     stats
   }
 

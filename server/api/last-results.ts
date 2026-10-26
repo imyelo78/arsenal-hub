@@ -1,6 +1,6 @@
 import { useDb, dbAll } from '../utils/db'
 import { syncFixtures, syncCLFixtures } from '../utils/sync'
-import { ARSENAL_FPL_ID } from '../utils/fpl'
+import { ARSENAL_FPL_ID, matchGraceCutoff } from '../utils/fpl'
 import { ARSENAL_FD_ID, CL_COMPETITION_LOGO } from '../utils/football-data'
 
 export default defineEventHandler(async (event) => {
@@ -18,10 +18,11 @@ export default defineEventHandler(async (event) => {
     FROM fixtures f
     JOIN teams th ON f.team_h = th.id
     JOIN teams ta ON f.team_a = ta.id
-    WHERE (f.team_h = ? OR f.team_a = ?) AND f.finished = 1
+    WHERE (f.team_h = ? OR f.team_a = ?)
+      AND (f.finished = 1 OR (f.started = 1 AND datetime(f.kickoff_time) < datetime(?)))
     ORDER BY f.kickoff_time DESC
     LIMIT 5
-  `, [ARSENAL_FPL_ID, ARSENAL_FPL_ID])
+  `, [ARSENAL_FPL_ID, ARSENAL_FPL_ID, matchGraceCutoff()])
 
   const clRows = await dbAll(db, `
     SELECT id, kickoff_time, stage, group_name, matchday,

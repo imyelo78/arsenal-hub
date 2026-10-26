@@ -1,6 +1,6 @@
 import { useDb, dbAll } from '../utils/db'
 import { syncFixtures, syncCLFixtures } from '../utils/sync'
-import { ARSENAL_FPL_ID } from '../utils/fpl'
+import { ARSENAL_FPL_ID, isMatchOver } from '../utils/fpl'
 import { ARSENAL_FD_ID, CL_COMPETITION_LOGO } from '../utils/football-data'
 
 export default defineEventHandler(async (event) => {
@@ -28,7 +28,7 @@ export default defineEventHandler(async (event) => {
       date: r.kickoff_time,
       venue: null,
       status: {
-        short: r.finished ? 'FT' : r.started ? 'LIVE' : 'NS',
+        short: isMatchOver(r) ? 'FT' : r.started ? 'LIVE' : 'NS',
         elapsed: r.minutes || 0
       }
     },
@@ -46,7 +46,7 @@ export default defineEventHandler(async (event) => {
       home: r.started ? r.team_h_score : null,
       away: r.started ? r.team_a_score : null
     },
-    status: r.finished ? 'FT' : r.started ? 'LIVE' : 'NS'
+    status: isMatchOver(r) ? 'FT' : r.started ? 'LIVE' : 'NS'
   }))
 
   const clRows = await dbAll(db, `

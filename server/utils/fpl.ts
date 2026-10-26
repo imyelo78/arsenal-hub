@@ -143,6 +143,19 @@ export function formatFplFixtures(fixtures: any[]) {
   })
 }
 
+// 比赛结束宽限期：开球 4 小时后，即使数据源 finished 仍为 false 也按已完赛处理
+export const MATCH_GRACE_MS = 4 * 60 * 60 * 1000
+
+export function matchGraceCutoff(): string {
+  return new Date(Date.now() - MATCH_GRACE_MS).toISOString()
+}
+
+export function isMatchOver(row: { finished?: any; started?: any; kickoff_time?: string }): boolean {
+  if (row.finished) return true
+  if (!row.started || !row.kickoff_time) return false
+  return new Date(row.kickoff_time).getTime() < Date.now() - MATCH_GRACE_MS
+}
+
 // FPL element type (position) mapping
 export const FPL_POSITIONS: Record<number, { key: string; short: string }> = {
   1: { key: 'GK', short: 'GK' },

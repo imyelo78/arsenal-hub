@@ -1,6 +1,6 @@
 import { useDb, dbGet, dbAll } from '../utils/db'
 import { syncFixtures, syncCLFixtures } from '../utils/sync'
-import { ARSENAL_FPL_ID } from '../utils/fpl'
+import { ARSENAL_FPL_ID, matchGraceCutoff } from '../utils/fpl'
 import { ARSENAL_FD_ID, CL_COMPETITION_LOGO } from '../utils/football-data'
 
 export default defineEventHandler(async (event) => {
@@ -9,6 +9,8 @@ export default defineEventHandler(async (event) => {
 
   const db = useDb(event)
 
+  // 只有"未开始且未到开球时间"或"正在比赛中(开球未超 4h 宽限期)"的才算下场比赛,
+  // 防止数据源 finished 标记卡住时把已结束的比赛当成下一场
   const plRow = await dbGet(db, `
     SELECT
       f.id, f.kickoff_time, f.event, f.team_h, f.team_a,
@@ -19,9 +21,13 @@ export default defineEventHandler(async (event) => {
     JOIN teams th ON f.team_h = th.id
     JOIN teams ta ON f.team_a = ta.id
     WHERE (f.team_h = ? OR f.team_a = ?) AND f.finished = 0
+      AND (
+        (f.started = 0 AND datetime(f.kickoff_time) > datetime(?))
+        OR (f.started = 1 AND datetime(f.kickoff_time) > datetime(?))
+      )
     ORDER BY f.kickoff_time ASC
     LIMIT 1
-  `, [ARSENAL_FPL_ID, ARSENAL_FPL_ID])
+  `, [ARSENAL_FPL_ID, ARSENAL_FPL_ID, new Date().toISOString(), matchGraceCutoff()])
 
   const clRow = await dbGet(db, `
     SELECT id, kickoff_time, stage, group_name, matchday,
