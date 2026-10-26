@@ -58,7 +58,7 @@
     "quickFixturesDesc": "Full Premier League & UCL schedule with month filter",
     "quickStandingsDesc": "Live Premier League table & UCL league phase standings",
     "quickSquadDesc": "Season stats, last five displays and FPL points",
-    "quickLegendsDesc": "Henry, Bergkamp, Vieira — names written into history",
+    "quickLegendsDesc": "Wenger, Henry, Bergkamp, Vieira — names written into history",
     "viewMore": "Explore"
   },
   "fixtures": {
@@ -167,7 +167,7 @@
     "saves": "Saves",
     "ctaKicker": "Beyond The First Team",
     "ctaTitle": "The Legends Await",
-    "ctaSub": "Henry, Bergkamp, Vieira — names written into North London history. Their stories are worth reading again and again.",
+    "ctaSub": "Wenger, Henry, Bergkamp, Vieira — names written into North London history. Their stories are worth reading again and again.",
     "ctaLegends": "Meet the Legends"
   },
   "scorers": {
@@ -181,7 +181,8 @@
   },
   "legends": {
     "title": "Club Legends",
-    "subtitle": "Arsenal's all-time greats"
+    "subtitle": "The greatest figures in Arsenal's history",
+    "managerBadge": "Legendary Manager"
   },
   "club": {
     "title": "The Club",

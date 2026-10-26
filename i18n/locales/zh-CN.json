@@ -58,7 +58,7 @@
     "quickFixturesDesc": "英超、欧冠全部赛程与结果，支持按月份筛选",
     "quickStandingsDesc": "英超实时排名与欧冠联赛阶段积分",
     "quickSquadDesc": "球员赛季数据、近 5 场表现与 FPL 得分",
-    "quickLegendsDesc": "亨利、博格坎普、维埃拉，那些载入史册的名字",
+    "quickLegendsDesc": "温格、亨利、博格坎普、维埃拉，那些载入史册的名字",
     "viewMore": "立即查看"
   },
   "fixtures": {
@@ -167,7 +167,7 @@
     "saves": "扑救",
     "ctaKicker": "Beyond The First Team",
     "ctaTitle": "传奇殿堂，静候你来访",
-    "ctaSub": "亨利、博格坎普、维埃拉——那些把名字刻进北伦敦历史的人，他们的故事值得一读再读。",
+    "ctaSub": "温格、亨利、博格坎普、维埃拉——那些把名字刻进北伦敦历史的人，他们的故事值得一读再读。",
     "ctaLegends": "走进传奇殿堂"
   },
   "scorers": {
@@ -180,8 +180,9 @@
     "penalties": "点球"
   },
   "legends": {
-    "title": "传奇球员",
-    "subtitle": "阿森纳历史传奇球员"
+    "title": "传奇殿堂",
+    "subtitle": "阿森纳历史上的传奇人物",
+    "managerBadge": "传奇主帅"
   },
   "club": {
     "title": "俱乐部",

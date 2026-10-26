@@ -25,12 +25,18 @@ const { t, locale } = useI18n()
           <div class="flex items-center gap-2 flex-wrap">
             <h3 class="text-lg font-bold text-gray-900">{{ legend.name }}</h3>
             <span class="text-sm text-gray-400">{{ legend.years }}</span>
+            <span
+              v-if="legend.position === 'Manager'"
+              class="text-xs font-semibold px-2 py-0.5 rounded bg-arsenal-gold/15 text-arsenal-gold"
+            >{{ t('legends.managerBadge') }}</span>
           </div>
-          <div class="flex gap-2 mt-1 text-xs text-gray-500">
+          <div class="flex gap-2 mt-1 text-xs text-gray-500 flex-wrap">
             <span class="px-2 py-0.5 bg-gray-100 rounded">{{ legend.position }}</span>
             <span class="px-2 py-0.5 bg-gray-100 rounded">{{ legend.nationality }}</span>
-            <span class="px-2 py-0.5 bg-gray-100 rounded">{{ legend.apps }} apps</span>
-            <span class="px-2 py-0.5 bg-gray-100 rounded">{{ legend.goals }} goals</span>
+            <span v-if="legend.apps != null" class="px-2 py-0.5 bg-gray-100 rounded">{{ legend.apps }} apps</span>
+            <span v-if="legend.goals != null" class="px-2 py-0.5 bg-gray-100 rounded">{{ legend.goals }} goals</span>
+            <span v-if="legend.matches != null" class="px-2 py-0.5 bg-gray-100 rounded">{{ legend.matches }} matches</span>
+            <span v-for="chip in legend.extraChips || []" :key="chip" class="px-2 py-0.5 bg-arsenal-red/5 text-arsenal-red rounded">{{ chip }}</span>
           </div>
           <p class="text-sm text-gray-600 mt-2 leading-relaxed">
             {{ legend.description[locale] || legend.description['en-US'] }}

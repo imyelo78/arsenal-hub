@@ -28,6 +28,19 @@ export const honours = [
 
 export const legends = [
   {
+    id: 'wenger',
+    name: 'Arsène Wenger',
+    years: '1996-2018',
+    position: 'Manager',
+    nationality: 'France',
+    matches: 1235,
+    extraChips: ['3× Premier League', '7× FA Cups (record)', 'Invincibles 2003-04'],
+    description: {
+      'zh-CN': '温格教授，1996-2018年执教阿森纳22年，俱乐部历史上任期最长、执教场次最多的主教练（1235场）。率队3夺英超、7夺足总杯（历史纪录），2003-04赛季49场不败缔造"不败之师"。主导俱乐部从海布里迁入酋长球场，以科学管理与艺术足球彻底改变了阿森纳和英超的足球哲学。',
+      'en-US': 'Le Professeur. Managed Arsenal for 22 years (1996-2018), the club\'s longest-serving manager and its record 1,235 matches in charge. Won 3 Premier League titles and a record 7 FA Cups, masterminding the 49-game unbeaten Invincibles of 2003-04. Drove the move from Highbury to Emirates Stadium and transformed Arsenal\'s football philosophy and global standing.'
+    }
+  },
+  {
     id: 'henry',
     name: 'Thierry Henry',
     years: '1999-2007, 2012',
