@@ -136,8 +136,8 @@ async function doSyncFixtures(event?: any): Promise<number> {
   await dbBatch(db, statements)
   await updateSyncTime(db, 'fixtures')
 
-  // 比分更新后顺带重算积分榜（读取的是刚写入的 DB 数据）
-  doSyncStandings(event).catch(() => {})
+  // 比分更新后顺带重算积分榜（内联执行，读取的是刚写入的 DB 数据）
+  await doSyncStandings(event).catch((e: any) => console.error('chained standings recompute failed:', e))
   return fixtures.length
 }
 
