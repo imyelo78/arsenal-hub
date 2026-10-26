@@ -11,9 +11,10 @@ const localePath = useLocalePath()
         <div class="flex flex-wrap items-center justify-between gap-4">
           <div class="flex items-center gap-2.5">
             <img
-              src="https://resources.premierleague.com/premierleague/badges/50/t3.png"
+              src="/images/badges/t3.png"
               alt="Arsenal"
               class="w-6 h-6"
+              loading="lazy"
             />
             <span class="font-semibold text-arsenal-ink text-sm">Arsenal Hub</span>
           </div>
