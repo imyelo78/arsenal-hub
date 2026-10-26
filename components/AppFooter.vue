@@ -18,11 +18,17 @@ const localePath = useLocalePath()
             />
             <span class="font-semibold text-arsenal-ink text-sm">Arsenal Hub</span>
           </div>
-          <nav class="flex gap-5 text-xs text-arsenal-muted">
+          <nav class="flex flex-wrap gap-x-5 gap-y-2 text-xs text-arsenal-muted">
             <NuxtLink :to="localePath('/')" class="hover:text-arsenal-ink transition-colors">{{ t('nav.home') }}</NuxtLink>
             <NuxtLink :to="localePath('/fixtures')" class="hover:text-arsenal-ink transition-colors">{{ t('nav.fixtures') }}</NuxtLink>
             <NuxtLink :to="localePath('/standings')" class="hover:text-arsenal-ink transition-colors">{{ t('nav.standings') }}</NuxtLink>
             <NuxtLink :to="localePath('/squad')" class="hover:text-arsenal-ink transition-colors">{{ t('nav.squad') }}</NuxtLink>
+            <NuxtLink :to="localePath('/scorers')" class="hover:text-arsenal-ink transition-colors">{{ t('nav.scorers') }}</NuxtLink>
+            <NuxtLink :to="localePath('/legends')" class="hover:text-arsenal-ink transition-colors">{{ t('nav.legends') }}</NuxtLink>
+            <NuxtLink :to="localePath('/watch')" class="hover:text-arsenal-ink transition-colors">{{ t('nav.watch') }}</NuxtLink>
+            <NuxtLink :to="localePath('/club')" class="hover:text-arsenal-ink transition-colors">{{ t('nav.club') }}</NuxtLink>
+            <NuxtLink :to="localePath('/stadium')" class="hover:text-arsenal-ink transition-colors">{{ t('nav.stadium') }}</NuxtLink>
+            <NuxtLink :to="localePath('/women')" class="hover:text-arsenal-ink transition-colors">{{ t('nav.women') }}</NuxtLink>
           </nav>
         </div>
 

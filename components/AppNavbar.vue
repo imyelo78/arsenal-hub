@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 
@@ -12,8 +12,34 @@ const navItems = [
   { key: 'home', path: '/', label: 'nav.home' },
   { key: 'fixtures', path: '/fixtures', label: 'nav.fixtures' },
   { key: 'standings', path: '/standings', label: 'nav.standings' },
-  { key: 'squad', path: '/squad', label: 'nav.squad' }
+  { key: 'squad', path: '/squad', label: 'nav.squad' },
+  { key: 'scorers', path: '/scorers', label: 'nav.scorers' }
 ]
+
+// 更多菜单：次级页面入口
+const moreItems = [
+  { key: 'legends', path: '/legends', label: 'nav.legends' },
+  { key: 'watch', path: '/watch', label: 'nav.watch' },
+  { key: 'club', path: '/club', label: 'nav.club' },
+  { key: 'stadium', path: '/stadium', label: 'nav.stadium' },
+  { key: 'women', path: '/women', label: 'nav.women' }
+]
+const mobileItems = [...navItems, ...moreItems]
+
+const moreOpen = ref(false)
+const moreActive = computed(() => moreItems.some((item) => route.path.startsWith(item.path)))
+
+watch(() => route.path, () => {
+  moreOpen.value = false
+})
+
+function onPageClick(e: MouseEvent) {
+  if (!(e.target as HTMLElement | null)?.closest?.('[data-more-menu]')) {
+    moreOpen.value = false
+  }
+}
+onMounted(() => document.addEventListener('click', onPageClick))
+onBeforeUnmount(() => document.removeEventListener('click', onPageClick))
 
 function isActive(path: string): boolean {
   if (path === '/') return route.path === '/'
@@ -56,6 +82,51 @@ function toggleLocale() {
           />
         </NuxtLink>
 
+        <!-- More dropdown -->
+        <div class="relative" data-more-menu>
+          <button
+            @click="moreOpen = !moreOpen"
+            class="relative px-3.5 py-2 text-sm font-medium transition-colors flex items-center gap-1"
+            :class="moreActive || moreOpen ? 'text-arsenal-ink' : 'text-arsenal-muted hover:text-arsenal-ink2'"
+          >
+            {{ $t('nav.more') }}
+            <svg
+              class="w-3 h-3 transition-transform duration-200"
+              :class="moreOpen ? 'rotate-180' : ''"
+              fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+            <span
+              v-if="moreActive"
+              class="absolute left-3.5 right-3.5 -bottom-px h-0.5 bg-arsenal-red rounded-full"
+            />
+          </button>
+          <Transition
+            enter-active-class="transition-all duration-150 ease-out"
+            enter-from-class="opacity-0 -translate-y-1"
+            enter-to-class="opacity-100 translate-y-0"
+            leave-active-class="transition-all duration-100 ease-in"
+            leave-from-class="opacity-100 translate-y-0"
+            leave-to-class="opacity-0 -translate-y-1"
+          >
+            <div v-if="moreOpen" class="absolute right-0 top-full pt-2 z-50">
+              <div class="w-36 bg-white rounded-lg shadow-lg border border-arsenal-line py-1.5">
+                <NuxtLink
+                  v-for="item in moreItems"
+                  :key="item.key"
+                  :to="localePath(item.path)"
+                  class="block px-4 py-2 text-sm transition-colors"
+                  :class="isActive(item.path) ? 'text-arsenal-red font-medium' : 'text-arsenal-muted hover:text-arsenal-ink hover:bg-arsenal-red-50/60'"
+                  @click="moreOpen = false"
+                >
+                  {{ $t(item.label) }}
+                </NuxtLink>
+              </div>
+            </div>
+          </Transition>
+        </div>
+
         <!-- Language Toggle -->
         <button
           @click="toggleLocale"
@@ -92,7 +163,7 @@ function toggleLocale() {
       <div v-if="mobileMenuOpen" class="md:hidden bg-white border-t border-arsenal-line">
         <div class="container-page py-2">
           <NuxtLink
-            v-for="item in navItems"
+            v-for="item in mobileItems"
             :key="item.key"
             :to="localePath(item.path)"
             class="block px-2 py-3 text-sm font-medium border-b border-arsenal-line2 last:border-0"

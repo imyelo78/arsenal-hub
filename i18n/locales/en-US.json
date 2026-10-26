@@ -11,7 +11,8 @@
     "watch": "Watch Guide",
     "club": "Club",
     "stadium": "Stadium",
-    "women": "Women"
+    "women": "Women",
+    "more": "More"
   },
   "common": {
     "home": "Home",
@@ -125,7 +126,7 @@
   },
   "legends": {
     "title": "Club Legends",
-    "subtitle": "Arsenal\'s all-time greats"
+    "subtitle": "Arsenal's all-time greats"
   },
   "club": {
     "title": "The Club",
@@ -153,7 +154,7 @@
   },
   "women": {
     "title": "Arsenal Women",
-    "subtitle": "England\'s most successful women\'s club",
+    "subtitle": "England's most successful women's club",
     "founded": "Founded",
     "ground": "Ground",
     "manager": "Manager"
