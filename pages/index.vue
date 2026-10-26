@@ -92,27 +92,9 @@ onUnmounted(() => {
   if (timer) clearInterval(timer)
 })
 
-const isHome = computed(() => ARSENAL_IDS.includes(nextMatch.value?.teams?.home?.id))
-const opponent = computed(() => {
-  if (!nextMatch.value) return ''
-  return isHome.value
-    ? nextMatch.value.teams.away.name
-    : nextMatch.value.teams.home.name
-})
-const opponentLogo = computed(() => {
-  if (!nextMatch.value) return ''
-  return isHome.value
-    ? nextMatch.value.teams.away.logo
-    : nextMatch.value.teams.home.logo
-})
-// 阿森纳的队徽与队名（无论主客场，卡片左侧固定显示阿森纳）
-const arsenalLogo = computed(() => {
-  if (!nextMatch.value) return ''
-  return isHome.value
-    ? nextMatch.value.teams.home.logo
-    : nextMatch.value.teams.away.logo
-})
-const arsenalName = computed(() => (locale.value === 'zh' ? '阿森纳' : 'Arsenal'))
+// 按比赛常规显示：主队在左，客队在右
+const homeTeam = computed(() => nextMatch.value?.teams?.home || null)
+const awayTeam = computed(() => nextMatch.value?.teams?.away || null)
 const matchDateLabel = computed(() => {
   if (!matchDate.value) return ''
   return matchDate.value.toLocaleString(locale.value === 'zh' ? 'zh-CN' : 'en-US', {
@@ -223,25 +205,19 @@ const matchdayLabel = computed(() => {
               <span class="text-[10px] font-bold text-arsenal-red uppercase tracking-wider">{{ t('home.nextMatch') }}</span>
             </div>
 
-            <!-- Teams -->
+            <!-- Teams (home left / away right) -->
             <div class="flex items-center justify-between gap-1.5 mb-2">
-              <div class="flex flex-col items-center gap-0.5 flex-1">
-                <img v-if="arsenalLogo" :src="arsenalLogo" :alt="arsenalName" class="w-7 h-7 object-contain" />
+              <div class="flex flex-col items-center gap-1 flex-1">
+                <img v-if="homeTeam?.logo" :src="homeTeam.logo" :alt="homeTeam?.name" class="w-7 h-7 object-contain" />
                 <span class="text-[10px] font-medium text-arsenal-ink text-center truncate w-full">
-                  {{ arsenalName }}
-                </span>
-                <span
-                  class="text-[9px] font-bold uppercase leading-none"
-                  :class="isHome ? 'text-arsenal-red' : 'text-arsenal-muted'"
-                >
-                  {{ isHome ? t('common.home') : t('common.away') }}
+                  {{ homeTeam?.name }}
                 </span>
               </div>
               <div class="text-arsenal-subtle text-[10px] font-bold tracking-widest">VS</div>
               <div class="flex flex-col items-center gap-1 flex-1">
-                <img v-if="opponentLogo" :src="opponentLogo" :alt="opponent" class="w-7 h-7 object-contain" />
+                <img v-if="awayTeam?.logo" :src="awayTeam.logo" :alt="awayTeam?.name" class="w-7 h-7 object-contain" />
                 <span class="text-[10px] font-medium text-arsenal-ink text-center truncate w-full">
-                  {{ opponent }}
+                  {{ awayTeam?.name }}
                 </span>
               </div>
             </div>
