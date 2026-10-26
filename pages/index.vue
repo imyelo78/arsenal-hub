@@ -728,6 +728,7 @@ const quickLinks = computed(() => [
   border: 1px solid rgba(201, 162, 75, 0.16);
   top: -280px;
   right: -180px;
+  pointer-events: none;
 }
 .ucl::after {
   content: '';
@@ -738,6 +739,11 @@ const quickLinks = computed(() => [
   border: 1px solid rgba(239, 1, 7, 0.14);
   bottom: -180px;
   left: -120px;
+  pointer-events: none;
+}
+.ucl .sec-head {
+  position: relative;
+  z-index: 2;
 }
 .ucl .sec-title::before { background: #c9a24b; }
 .ucl .sec-title h2 { color: #fff; }
