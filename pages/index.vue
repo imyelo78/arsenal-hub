@@ -105,12 +105,14 @@ const opponentLogo = computed(() => {
     ? nextMatch.value.teams.away.logo
     : nextMatch.value.teams.home.logo
 })
-const homeLogo = computed(() => {
+// 阿森纳的队徽与队名（无论主客场，卡片左侧固定显示阿森纳）
+const arsenalLogo = computed(() => {
   if (!nextMatch.value) return ''
   return isHome.value
     ? nextMatch.value.teams.home.logo
     : nextMatch.value.teams.away.logo
 })
+const arsenalName = computed(() => (locale.value === 'zh' ? '阿森纳' : 'Arsenal'))
 const matchDateLabel = computed(() => {
   if (!matchDate.value) return ''
   return matchDate.value.toLocaleString(locale.value === 'zh' ? 'zh-CN' : 'en-US', {
@@ -223,10 +225,16 @@ const matchdayLabel = computed(() => {
 
             <!-- Teams -->
             <div class="flex items-center justify-between gap-1.5 mb-2">
-              <div class="flex flex-col items-center gap-1 flex-1">
-                <img v-if="homeLogo" :src="homeLogo" :alt="nextMatch.teams.home.name" class="w-7 h-7 object-contain" />
+              <div class="flex flex-col items-center gap-0.5 flex-1">
+                <img v-if="arsenalLogo" :src="arsenalLogo" :alt="arsenalName" class="w-7 h-7 object-contain" />
                 <span class="text-[10px] font-medium text-arsenal-ink text-center truncate w-full">
-                  {{ nextMatch.teams.home.name }}
+                  {{ arsenalName }}
+                </span>
+                <span
+                  class="text-[9px] font-bold uppercase leading-none"
+                  :class="isHome ? 'text-arsenal-red' : 'text-arsenal-muted'"
+                >
+                  {{ isHome ? t('common.home') : t('common.away') }}
                 </span>
               </div>
               <div class="text-arsenal-subtle text-[10px] font-bold tracking-widest">VS</div>
