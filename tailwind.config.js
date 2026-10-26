@@ -25,13 +25,18 @@ export default {
           line: '#E5E7EB',
           line2: '#F3F4F6',
           surface: '#FAFAFA',
-          bg: '#FFFFFF'
+          bg: '#FFFFFF',
+          // Matchday night palette
+          night: '#0A0A0E',
+          'night-soft': '#131318',
+          gold: '#C9A24B'
         }
       },
       fontFamily: {
         sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Noto Sans SC', 'Microsoft YaHei', 'Helvetica Neue', 'sans-serif'],
         mono: ['SF Mono', 'Fira Code', 'Menlo', 'Consolas', 'monospace'],
-        display: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif']
+        display: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+        score: ['Oswald', 'Bahnschrift', 'Arial Narrow', 'sans-serif']
       },
       boxShadow: {
         'sm': '0 1px 2px 0 rgb(0 0 0 / 0.05)',

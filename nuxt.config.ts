@@ -94,6 +94,8 @@ export default defineNuxtConfig({
       ],
       link: [
         { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+        { rel: 'preload', as: 'font', type: 'font/woff2', href: '/fonts/oswald-latin-500-normal.woff2', crossorigin: 'anonymous' },
+        { rel: 'preload', as: 'font', type: 'font/woff2', href: '/fonts/oswald-latin-700-normal.woff2', crossorigin: 'anonymous' },
         { rel: 'preconnect', href: 'https://fantasy.premierleague.com', crossorigin: 'anonymous' },
         { rel: 'dns-prefetch', href: 'https://api.football-data.org' },
         { rel: 'dns-prefetch', href: 'https://resources.premierleague.com' }
