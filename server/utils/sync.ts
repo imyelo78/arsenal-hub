@@ -1,8 +1,8 @@
 // Data sync service - pulls from FPL / football-data and writes to DB
 // Sync intervals:
 //   teams:     30 days
-//   fixtures:  1 hour
-//   standings: 30 min
+//   fixtures:  12 hours
+//   standings: 12 hours
 //   players:   7 days
 //   cl_fixtures / cl_standings: 12 hours
 //
@@ -34,8 +34,8 @@ import {
 
 export const SYNC_INTERVALS = {
   teams: 30 * 24 * 60 * 60 * 1000,
-  fixtures: 60 * 60 * 1000,
-  standings: 30 * 60 * 1000,
+  fixtures: 12 * 60 * 60 * 1000,
+  standings: 12 * 60 * 60 * 1000,
   players: 7 * 24 * 60 * 60 * 1000,
   cl_fixtures: 12 * 60 * 60 * 1000,
   cl_standings: 12 * 60 * 60 * 1000

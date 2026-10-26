@@ -1,6 +1,6 @@
 import { getCache, setCache } from '../utils/cache'
 
-const SCORERS_TTL = 28800 // 8 hours
+const SCORERS_TTL = 604800 // 7 days
 
 // GET /api/scorers
 // Returns Premier League top scorers from football-data.org
