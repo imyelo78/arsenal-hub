@@ -25,13 +25,19 @@ const isPlayerDetail = computed(() => {
   const p = route.path.replace(/\/+$/, '')
   return p.startsWith('/player/') || p.startsWith('/en/player/')
 })
+
+// 俱乐部页同为全宽沉浸式布局（zh: /club, en: /en/club）
+const isClub = computed(() => {
+  const p = route.path.replace(/\/+$/, '')
+  return p === '/club' || p === '/en/club'
+})
 </script>
 
 <template>
   <div class="min-h-screen flex flex-col bg-white">
     <AppNavbar />
-    <main class="flex-1" :class="isHome || isSquad || isLegends || isPlayerDetail ? '' : 'pt-16'">
-      <div v-if="isHome || isSquad || isLegends || isPlayerDetail">
+    <main class="flex-1" :class="isHome || isSquad || isLegends || isPlayerDetail || isClub ? '' : 'pt-16'">
+      <div v-if="isHome || isSquad || isLegends || isPlayerDetail || isClub">
         <div class="page-transition">
           <slot />
         </div>
