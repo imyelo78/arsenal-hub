@@ -84,7 +84,8 @@ function fmtDateTime(d: Date) {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
+    timeZone: displayTimeZone(locale.value)
   })
 }
 
@@ -118,10 +119,10 @@ const matchdayLabel = computed(() => {
 })
 
 function dayLabel(d: Date) {
-  return d.toLocaleDateString(loc.value, { month: 'long', day: 'numeric' })
+  return d.toLocaleDateString(loc.value, { month: 'long', day: 'numeric', timeZone: displayTimeZone(locale.value) })
 }
 function subLabel(d: Date) {
-  return d.toLocaleString(loc.value, { weekday: 'short', hour: '2-digit', minute: '2-digit' })
+  return d.toLocaleString(loc.value, { weekday: 'short', hour: '2-digit', minute: '2-digit', timeZone: displayTimeZone(locale.value) })
 }
 
 // ===== Result rows (arsenal perspective) =====

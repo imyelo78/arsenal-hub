@@ -61,16 +61,17 @@ const leagues = computed(() => {
 })
 
 const monthOptions = computed(() => {
+  const tz = displayTimeZone(locale.value)
   const set = new Set<string>()
   fixtures.value.forEach((f: any) => {
-    if (f.fixture?.date) set.add(String(f.fixture.date).slice(0, 7))
+    if (f.fixture?.date) set.add(dayKeyInZone(f.fixture.date, tz).slice(0, 7))
   })
   return Array.from(set).sort()
 })
 
 const monthLabel = (ym: string) => {
-  const d = new Date(ym + '-01T00:00:00')
-  return d.toLocaleDateString(locale.value === 'zh' ? 'zh-CN' : 'en-US', { year: 'numeric', month: 'long' })
+  const d = new Date(ym + '-01T12:00:00Z')
+  return d.toLocaleDateString(locale.value === 'zh' ? 'zh-CN' : 'en-US', { year: 'numeric', month: 'long', timeZone: displayTimeZone(locale.value) })
 }
 
 const getMatchStatus = (f: any) => {
@@ -98,13 +99,14 @@ const filteredFixtures = computed(() => {
 const dayLabel = (dateStr: string) => {
   const d = new Date(dateStr)
   const zh = locale.value === 'zh'
-  const day = d.toLocaleDateString(zh ? 'zh-CN' : 'en-US', zh ? { month: 'long', day: 'numeric' } : { month: 'short', day: 'numeric' })
-  const wd = d.toLocaleDateString(zh ? 'zh-CN' : 'en-US', { weekday: 'short' })
+  const tz = displayTimeZone(locale.value)
+  const day = d.toLocaleDateString(zh ? 'zh-CN' : 'en-US', { ...(zh ? { month: 'long', day: 'numeric' } : { month: 'short', day: 'numeric' }), timeZone: tz })
+  const wd = d.toLocaleDateString(zh ? 'zh-CN' : 'en-US', { weekday: 'short', timeZone: tz })
   return `${day} · ${wd}`
 }
 const timeLabel = (dateStr: string) => {
   const d = new Date(dateStr)
-  return d.toLocaleTimeString(locale.value === 'zh' ? 'zh-CN' : 'en-US', { hour: '2-digit', minute: '2-digit' })
+  return d.toLocaleTimeString(locale.value === 'zh' ? 'zh-CN' : 'en-US', { hour: '2-digit', minute: '2-digit', timeZone: displayTimeZone(locale.value) })
 }
 
 const roundText = (f: any) => {
@@ -124,8 +126,8 @@ const groupedFixtures = computed(() => {
   const groups: Array<{ key: string; label: string; comp: string; items: any[] }> = []
   const map = new Map<string, any[]>()
   filteredFixtures.value.forEach((f: any) => {
-    const key = String(f.fixture?.date || '').slice(0, 10)
-    if (!key) return
+    if (!f.fixture?.date) return
+    const key = dayKeyInZone(f.fixture.date, displayTimeZone(locale.value))
     if (!map.has(key)) {
       map.set(key, [])
       groups.push({ key, label: dayLabel(key), comp: '', items: map.get(key)! })

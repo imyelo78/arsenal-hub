@@ -22,7 +22,8 @@ const matchDateLabel = computed(() => {
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-    weekday: 'long'
+    weekday: 'long',
+    timeZone: displayTimeZone(locale.value)
   })
 })
 
