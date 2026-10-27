@@ -81,7 +81,10 @@ onMounted(() => {
           </div>
         </div>
 
-        <div class="reveal group grid grid-cols-1 overflow-hidden rounded-2xl border border-white/10 bg-arsenal-night-soft transition-all duration-300 hover:border-arsenal-gold/40 hover:shadow-[0_30px_70px_rgba(0,0,0,.5)] lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+        <NuxtLink
+          :to="localePath(`/legends/${featured.id}`)"
+          class="reveal group grid grid-cols-1 overflow-hidden rounded-2xl border border-white/10 bg-arsenal-night-soft transition-all duration-300 hover:border-arsenal-gold/40 hover:shadow-[0_30px_70px_rgba(0,0,0,.5)] lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]"
+        >
           <div class="relative min-h-[320px] overflow-hidden lg:min-h-[460px]">
             <img
               v-if="!failedArt.has(featured.id)"
@@ -125,7 +128,7 @@ onMounted(() => {
               </div>
             </div>
           </div>
-        </div>
+        </NuxtLink>
       </div>
     </section>
 
@@ -155,9 +158,10 @@ onMounted(() => {
         </div>
 
         <div class="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-          <article
+          <NuxtLink
             v-for="l in playerLegends"
             :key="l.id"
+            :to="localePath(`/legends/${l.id}`)"
             class="group overflow-hidden rounded-2xl border border-white/10 bg-arsenal-night transition-all duration-300 hover:-translate-y-1.5 hover:border-arsenal-red/45 hover:shadow-[0_26px_60px_rgba(0,0,0,.5)]"
           >
             <div class="relative h-72 overflow-hidden">
@@ -189,7 +193,7 @@ onMounted(() => {
               </div>
               <p class="mt-4 text-sm leading-7 text-white/55">{{ desc(l) }}</p>
             </div>
-          </article>
+          </NuxtLink>
         </div>
       </div>
     </section>

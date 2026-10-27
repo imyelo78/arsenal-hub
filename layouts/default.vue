@@ -14,18 +14,24 @@ const isSquad = computed(() => {
   return p === '/squad' || p === '/en/squad'
 })
 
-// 传奇殿堂页同为全宽沉浸式布局（zh: /legends, en: /en/legends）
+// 传奇殿堂（列表 + 传奇个人页）为全宽沉浸式布局（zh: /legends, en: /en/legends）
 const isLegends = computed(() => {
   const p = route.path.replace(/\/+$/, '')
-  return p === '/legends' || p === '/en/legends'
+  return p === '/legends' || p === '/en/legends' || p.startsWith('/legends/') || p.startsWith('/en/legends/')
+})
+
+// 球员个人页同为全宽沉浸式布局（zh: /player/:id, en: /en/player/:id）
+const isPlayerDetail = computed(() => {
+  const p = route.path.replace(/\/+$/, '')
+  return p.startsWith('/player/') || p.startsWith('/en/player/')
 })
 </script>
 
 <template>
   <div class="min-h-screen flex flex-col bg-white">
     <AppNavbar />
-    <main class="flex-1" :class="isHome || isSquad || isLegends ? '' : 'pt-16'">
-      <div v-if="isHome || isSquad || isLegends">
+    <main class="flex-1" :class="isHome || isSquad || isLegends || isPlayerDetail ? '' : 'pt-16'">
+      <div v-if="isHome || isSquad || isLegends || isPlayerDetail">
         <div class="page-transition">
           <slot />
         </div>
