@@ -3,6 +3,7 @@
   "siteTagline": "Arsenal Match Center",
   "nav": {
     "home": "Home",
+    "matchcenter": "Match Centre",
     "fixtures": "Fixtures",
     "standings": "Table",
     "squad": "Squad",
@@ -283,6 +284,30 @@
     "ctaSub": "A new generation follows the trail of the Invincibles towards more glory. Witness history — right now.",
     "ctaBtnSquad": "Meet the Squad →",
     "ctaBtnLegends": "Legends"
+  },
+  "mc": {
+    "kicker": "MATCH CENTER · 2026/27 SEASON",
+    "title": "Match Centre",
+    "sub": "Fixtures, results, tables and top scorers — every Arsenal match and both league races in one place.",
+    "chipFixtures": "Fixtures · Results",
+    "chipTables": "PL & UCL Tables",
+    "chipLive": "Auto-updating data",
+    "tabFixtures": "Fixtures & Results",
+    "tabPl": "Premier League",
+    "tabCl": "Champions League",
+    "tabScorers": "Top Scorers",
+    "allMonths": "All months",
+    "fxTitle": "Fixtures & Results",
+    "fxSub": "FIXTURES & RESULTS · ALL COMPETITIONS",
+    "plTitle": "Premier League Table",
+    "plSub": "PREMIER LEAGUE · 2026/27 LIVE RANKING",
+    "clTitle": "Champions League Table",
+    "clSub": "CHAMPIONS LEAGUE · LEAGUE PHASE",
+    "scTitle": "Top Scorers",
+    "scSub": "PREMIER LEAGUE · TOP 20",
+    "legendArsenal": "Red bar = Arsenal",
+    "clNote": "Gold rank = top 8 qualify directly for the Round of 16",
+    "clLegendQual": "Direct qualification (1st-8th)"
   },
   "stadium": {
     "title": "Stadium Guide",

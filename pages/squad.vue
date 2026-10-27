@@ -233,7 +233,7 @@ onMounted(() => {
                 <p class="mt-1 text-[13px] tracking-[.14em] text-arsenal-muted">{{ t('squad.boardSub') }}</p>
               </div>
             </div>
-            <NuxtLink :to="localePath('/scorers')" class="hidden whitespace-nowrap text-sm font-medium text-arsenal-muted transition-colors hover:text-arsenal-red sm:block">{{ t('squad.boardMore') }}</NuxtLink>
+            <NuxtLink :to="{ path: localePath('/matchcenter'), query: { tab: 'scorers' } }" class="hidden whitespace-nowrap text-sm font-medium text-arsenal-muted transition-colors hover:text-arsenal-red sm:block">{{ t('squad.boardMore') }}</NuxtLink>
           </div>
 
           <div class="grid grid-cols-1 gap-5 lg:grid-cols-3">

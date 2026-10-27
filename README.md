@@ -52,10 +52,11 @@ API_FOOTBALL_KEY=your-api-key-here
 arsenal-hub/
 ├── pages/                    # 页面路由
 │   ├── index.vue             # 首页：下场赛事 + 比分（全宽沉浸布局）
-│   ├── fixtures.vue          # 赛程页
+│   ├── matchcenter.vue       # 赛事中心：赛程赛果 / 英超榜 / 欧冠榜 / 射手榜（4 Tab，?tab= 同步）
+│   ├── fixtures.vue          # /fixtures 301 → 赛事中心
 │   ├── fixture/[id].vue      # 单场比赛详情
-│   ├── standings.vue         # 积分榜（英超 + 欧冠）
-│   ├── scorers.vue           # 射手榜
+│   ├── standings.vue         # /standings 301 → 赛事中心
+│   ├── scorers.vue           # /scorers 301 → 赛事中心
 │   ├── squad.vue             # 一线队：核心焦点 / 数据榜 / 完整阵容
 │   ├── player/[id].vue       # 球员个人页：赛季数据 / FPL 指数 / 近 5 场
 │   ├── legends.vue           # 传奇殿堂：温格焦点 + 49 不败 + 群星网格

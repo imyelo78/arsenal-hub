@@ -11,17 +11,15 @@ const scrolled = ref(false)
 
 const navItems = [
   { key: 'home', path: '/', label: 'nav.home' },
-  { key: 'fixtures', path: '/fixtures', label: 'nav.fixtures' },
-  { key: 'standings', path: '/standings', label: 'nav.standings' },
+  { key: 'matchcenter', path: '/matchcenter', label: 'nav.matchcenter' },
   { key: 'squad', path: '/squad', label: 'nav.squad' },
-  { key: 'scorers', path: '/scorers', label: 'nav.scorers' }
+  { key: 'legends', path: '/legends', label: 'nav.legends' },
+  { key: 'club', path: '/club', label: 'nav.club' }
 ]
 
 // 更多菜单：次级页面入口
 const moreItems = [
-  { key: 'legends', path: '/legends', label: 'nav.legends' },
   { key: 'watch', path: '/watch', label: 'nav.watch' },
-  { key: 'club', path: '/club', label: 'nav.club' },
   { key: 'stadium', path: '/stadium', label: 'nav.stadium' },
   { key: 'women', path: '/women', label: 'nav.women' }
 ]

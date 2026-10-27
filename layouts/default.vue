@@ -31,13 +31,19 @@ const isClub = computed(() => {
   const p = route.path.replace(/\/+$/, '')
   return p === '/club' || p === '/en/club'
 })
+
+// 赛事中心同为全宽沉浸式布局（zh: /matchcenter, en: /en/matchcenter）
+const isMatchcenter = computed(() => {
+  const p = route.path.replace(/\/+$/, '')
+  return p === '/matchcenter' || p === '/en/matchcenter'
+})
 </script>
 
 <template>
   <div class="min-h-screen flex flex-col bg-white">
     <AppNavbar />
-    <main class="flex-1" :class="isHome || isSquad || isLegends || isPlayerDetail || isClub ? '' : 'pt-16'">
-      <div v-if="isHome || isSquad || isLegends || isPlayerDetail || isClub">
+    <main class="flex-1" :class="isHome || isSquad || isLegends || isPlayerDetail || isClub || isMatchcenter ? '' : 'pt-16'">
+      <div v-if="isHome || isSquad || isLegends || isPlayerDetail || isClub || isMatchcenter">
         <div class="page-transition">
           <slot />
         </div>

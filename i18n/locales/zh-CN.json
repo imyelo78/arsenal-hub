@@ -3,6 +3,7 @@
   "siteTagline": "阿森纳比赛中心",
   "nav": {
     "home": "首页",
+    "matchcenter": "赛事",
     "fixtures": "赛程",
     "standings": "积分榜",
     "squad": "球员",
@@ -283,6 +284,30 @@
     "ctaSub": "新一代枪手正追随 49 不败的足迹，向着更多荣耀进发。见证历史，就在此刻。",
     "ctaBtnSquad": "查看一线队 →",
     "ctaBtnLegends": "传奇殿堂"
+  },
+  "mc": {
+    "kicker": "MATCH CENTER · 2026/27 赛季",
+    "title": "赛事中心",
+    "sub": "赛程赛果与积分榜，一站看全。英超、欧冠的每一场枪手比赛，以及两条战线的实时排名。",
+    "chipFixtures": "赛程 · 赛果",
+    "chipTables": "英超 & 欧冠积分榜",
+    "chipLive": "数据自动更新",
+    "tabFixtures": "赛程赛果",
+    "tabPl": "英超积分榜",
+    "tabCl": "欧冠积分榜",
+    "tabScorers": "射手榜",
+    "allMonths": "全部月份",
+    "fxTitle": "赛程赛果",
+    "fxSub": "FIXTURES & RESULTS · 全部赛事",
+    "plTitle": "英超积分榜",
+    "plSub": "PREMIER LEAGUE · 2026/27 实时排名",
+    "clTitle": "欧冠积分榜",
+    "clSub": "CHAMPIONS LEAGUE · 联赛阶段",
+    "scTitle": "射手榜",
+    "scSub": "PREMIER LEAGUE · 前 20",
+    "legendArsenal": "红条行 = 阿森纳",
+    "clNote": "金色排名 = 联赛阶段前 8 名，直接晋级 16 强淘汰赛",
+    "clLegendQual": "直接晋级区（1-8 名）"
   },
   "stadium": {
     "title": "球场指南",

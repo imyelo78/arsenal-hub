@@ -140,7 +140,7 @@ const matchStatusLabel = computed(() => {
   <div class="page-enter">
     <!-- Back link -->
     <NuxtLink
-      :to="localePath('/fixtures')"
+      :to="localePath('/matchcenter')"
       class="inline-flex items-center gap-1 text-sm text-arsenal-muted hover:text-arsenal-ink transition-colors mb-6"
     >
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -162,7 +162,7 @@ const matchStatusLabel = computed(() => {
     <div v-else-if="error">
       <EmptyState icon="📭" :message="t('common.noData')" />
       <div class="text-center">
-        <NuxtLink :to="localePath('/fixtures')" class="btn-primary mt-4 inline-block">
+        <NuxtLink :to="localePath('/matchcenter')" class="btn-primary mt-4 inline-block">
           {{ t('fixtures.title') }}
         </NuxtLink>
       </div>
@@ -430,7 +430,7 @@ const matchStatusLabel = computed(() => {
 
       <!-- Back button -->
       <div class="text-center">
-        <NuxtLink :to="localePath('/fixtures')" class="btn-outline inline-flex">
+        <NuxtLink :to="localePath('/matchcenter')" class="btn-outline inline-flex">
           {{ t('fixture.backToList') || 'Back to fixtures' }}
         </NuxtLink>
       </div>
