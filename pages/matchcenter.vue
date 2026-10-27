@@ -7,7 +7,7 @@ const route = useRoute()
 const router = useRouter()
 
 /* ---------- Tab 状态（?tab= 同步 URL） ---------- */
-const VALID_TABS = ['fixtures', 'pl', 'cl', 'scorers']
+const VALID_TABS = ['fixtures', 'pl', 'cl', 'scorers', 'watch']
 const initialTab = VALID_TABS.includes(route.query.tab as string) ? (route.query.tab as string) : 'fixtures'
 const activeTab = ref<string>(initialTab)
 
@@ -152,8 +152,49 @@ const tabs = computed(() => [
   { id: 'fixtures', label: t('mc.tabFixtures') },
   { id: 'pl', label: t('mc.tabPl') },
   { id: 'cl', label: t('mc.tabCl') },
-  { id: 'scorers', label: t('mc.tabScorers') }
+  { id: 'scorers', label: t('mc.tabScorers') },
+  { id: 'watch', label: t('mc.tabWatch') }
 ])
+
+/* ---------- 观赛指南（按语言分组渠道） ---------- */
+const watchChannels = computed(() => {
+  if (locale.value === 'zh') {
+    return [
+      {
+        tag: t('watch.freeWatch'), tone: 'red',
+        items: [{ name: t('watch.cctv'), desc: t('watch.cctvDesc'), url: 'https://www.yangshipin.cn/', icon: 'CCTV' }]
+      },
+      {
+        tag: t('watch.paidWatch'), tone: 'dark',
+        items: [{ name: t('watch.migu'), desc: t('watch.miguDesc'), url: 'https://www.miguvideo.com/', icon: 'MG' }]
+      },
+      {
+        tag: t('watch.highlights'), tone: 'blue',
+        items: [
+          { name: t('watch.bilibili'), desc: t('watch.bilibiliDesc'), url: 'https://www.bilibili.com/', icon: 'B' },
+          { name: t('watch.youtube'), desc: t('watch.youtubeDesc'), url: 'https://www.youtube.com/@premierleague', icon: 'YT' }
+        ]
+      }
+    ]
+  }
+  return [
+    {
+      tag: t('watch.freeWatch'), tone: 'red',
+      items: [{ name: t('watch.bbcHighlights'), desc: t('watch.bbcDesc'), url: 'https://www.bbc.co.uk/programmes/b007ttnb', icon: 'BBC' }]
+    },
+    {
+      tag: t('watch.paidWatch'), tone: 'dark',
+      items: [
+        { name: t('watch.skySports'), desc: t('watch.skySportsDesc'), url: 'https://www.skysports.com/', icon: 'SS' },
+        { name: t('watch.tntSports'), desc: t('watch.tntSportsDesc'), url: 'https://www.tntsports.co.uk/', icon: 'TNT' }
+      ]
+    },
+    {
+      tag: t('watch.highlights'), tone: 'blue',
+      items: [{ name: t('watch.youtube'), desc: t('watch.youtubeDesc'), url: 'https://www.youtube.com/@premierleague', icon: 'YT' }]
+    }
+  ]
+})
 
 const isArsenalRow = (f: any) =>
   isArsenalTeam(f.teams?.home?.id) || isArsenalTeam(f.teams?.away?.id)
@@ -471,6 +512,47 @@ useHead({ title: () => `${t('mc.title')} · Arsenal Hub` })
           </table>
         </div>
       </section>
+      <!-- ================= 观赛指南 ================= -->
+      <section v-show="activeTab === 'watch'">
+        <div class="mb-5 mt-9 flex items-end gap-3.5">
+          <span class="h-[26px] w-[5px] flex-none rounded bg-arsenal-gold"></span>
+          <div>
+            <h2 class="text-[21px] font-extrabold tracking-tight">{{ t('watch.title') }}</h2>
+            <p class="mt-0.5 text-[12px] tracking-[.16em] text-white/40">{{ t('watch.subtitle') }}</p>
+          </div>
+        </div>
+
+        <div v-for="group in watchChannels" :key="group.tag" class="mb-7">
+          <div class="mb-3 flex items-center gap-3">
+            <span
+              class="rounded-full px-3 py-1 text-[11px] font-bold tracking-[.12em]"
+              :class="group.tone === 'red' ? 'bg-arsenal-red/[0.18] text-[#ff9b9d] border border-arsenal-red/40' : (group.tone === 'dark' ? 'bg-white/[0.08] text-white/70 border border-white/15' : 'bg-arsenal-gold/[0.14] text-arsenal-gold border border-arsenal-gold/35')"
+            >{{ group.tag }}</span>
+            <i class="h-px flex-1 bg-[linear-gradient(90deg,rgba(255,255,255,.1),transparent)]"></i>
+          </div>
+          <div class="grid gap-3 sm:grid-cols-2">
+            <a
+              v-for="ch in group.items"
+              :key="ch.name"
+              :href="ch.url"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="wcard"
+            >
+              <span class="wicon" :class="group.tone === 'red' ? 'wicon-red' : (group.tone === 'dark' ? 'wicon-dark' : 'wicon-blue')">{{ ch.icon }}</span>
+              <span class="min-w-0 flex-1">
+                <b class="block text-[14.5px] font-semibold text-white">{{ ch.name }}</b>
+                <em class="mt-0.5 block text-[12.5px] not-italic leading-relaxed text-white/50">{{ ch.desc }}</em>
+              </span>
+              <svg class="h-5 w-5 flex-none text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <p class="rounded-2xl border border-white/10 bg-white/[0.03] p-4 text-[13px] leading-relaxed text-white/45">{{ t('watch.disclaimer') }}</p>
+      </section>
     </main>
   </div>
 </template>
@@ -631,4 +713,33 @@ tr.ars-row td:first-child::before {
 .legend span { display: inline-flex; align-items: center; gap: 7px; }
 .legend i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
 .cl-note { margin-top: 14px; font-size: 12px; letter-spacing: 0.04em; color: #C9A24B; }
+
+/* ---------- 观赛指南 ---------- */
+.wcard {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #131318;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 16px 18px;
+  transition: transform 0.25s, border-color 0.25s;
+}
+.wcard:hover { transform: translateY(-2px); border-color: rgba(239, 1, 7, 0.45); }
+.wicon {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+.wicon-red { background: linear-gradient(135deg, #EF0107, #A00005); }
+.wicon-dark { background: linear-gradient(135deg, #2A2A33, #101014); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12); }
+.wicon-blue { background: linear-gradient(135deg, #1E5AA8, #0E2C55); }
 </style>

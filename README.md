@@ -52,7 +52,7 @@ API_FOOTBALL_KEY=your-api-key-here
 arsenal-hub/
 ├── pages/                    # 页面路由
 │   ├── index.vue             # 首页：下场赛事 + 比分（全宽沉浸布局）
-│   ├── matchcenter.vue       # 赛事中心：赛程赛果 / 英超榜 / 欧冠榜 / 射手榜（4 Tab，?tab= 同步）
+│   ├── matchcenter.vue       # 赛事中心：赛程赛果 / 英超榜 / 欧冠榜 / 射手榜 / 观赛指南（5 Tab，?tab= 同步）
 │   ├── fixtures.vue          # /fixtures 301 → 赛事中心
 │   ├── fixture/[id].vue      # 单场比赛详情
 │   ├── standings.vue         # /standings 301 → 赛事中心
@@ -61,10 +61,10 @@ arsenal-hub/
 │   ├── player/[id].vue       # 球员个人页：赛季数据 / FPL 指数 / 近 5 场
 │   ├── legends.vue           # 传奇殿堂：温格焦点 + 49 不败 + 群星网格
 │   ├── legends/[id].vue      # 传奇个人页：荣誉墙 / 生涯大事记时间线
-│   ├── stadium.vue           # 球场
-│   ├── club.vue              # 俱乐部
-│   ├── women.vue             # 女足
-│   └── watch.vue             # 观赛指南
+│   ├── club.vue              # 俱乐部：荣誉室 / 王朝时代 / 档案 / 酋长球场 / 女足
+│   ├── watch.vue             # /watch 301 → 赛事中心
+│   ├── stadium.vue           # /stadium 301 → 俱乐部页
+│   └── women.vue             # /women 301 → 俱乐部页
 ├── components/               # 组件
 │   ├── AppNavbar.vue         # 导航栏
 │   ├── AppFooter.vue         # 页脚

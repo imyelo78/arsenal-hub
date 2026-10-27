@@ -5,12 +5,9 @@ const localePath = useLocalePath()
 const links = [
   { path: '/', label: 'nav.home' },
   { path: '/matchcenter', label: 'nav.matchcenter' },
-  { path: '/squad', label: 'nav.squad' },
-  { path: '/legends', label: 'nav.legends' },
-  { path: '/watch', label: 'nav.watch' },
   { path: '/club', label: 'nav.club' },
-  { path: '/stadium', label: 'nav.stadium' },
-  { path: '/women', label: 'nav.women' }
+  { path: '/squad', label: 'nav.squad' },
+  { path: '/legends', label: 'nav.legends' }
 ]
 </script>
 

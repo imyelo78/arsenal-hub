@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { clubInfo, honours } from '~/utils/legends'
+import { clubInfo, honours, stadiumInfo, womenInfo } from '~/utils/legends'
 
 const { t, locale } = useI18n()
 const localePath = useLocalePath()
@@ -80,6 +80,30 @@ const factCells = computed(() => [
   { label: t('club.manager'), value: clubInfo.manager },
   { label: t('club.chairman'), value: clubInfo.chairman },
   { label: t('club.factDirector'), value: clubInfo.sportDirector }
+])
+
+/* ---------- 酋长球场 ---------- */
+const zhKey = computed(() => (locale.value === 'zh' ? 'zh-CN' : 'en-US'))
+const stadiumDesc = computed(() => stadiumInfo.description[zhKey.value] || stadiumInfo.description['en-US'])
+const stadiumCells = computed(() => [
+  { label: t('stadium.name'), value: locale.value === 'zh' ? stadiumInfo.nameZh : stadiumInfo.name },
+  { label: t('stadium.capacity'), value: stadiumInfo.capacity.toLocaleString() },
+  { label: t('stadium.opened'), value: stadiumInfo.opened },
+  { label: t('stadium.architect'), value: stadiumInfo.architect },
+  { label: t('stadium.cost'), value: stadiumInfo.cost },
+  { label: t('stadium.address'), value: stadiumInfo.address }
+])
+const stands = computed(() =>
+  stadiumInfo.stands.map((s: any) => ({ name: locale.value === 'zh' ? s.nameZh : s.name, capacity: s.capacity }))
+)
+const transportRows = computed(() => stadiumInfo.transport.map((r: any) => r[zhKey.value] || r['en-US']))
+
+/* ---------- 女足 ---------- */
+const womenDesc = computed(() => womenInfo.description[zhKey.value] || womenInfo.description['en-US'])
+const womenCells = computed(() => [
+  { label: t('women.founded'), value: womenInfo.founded },
+  { label: t('women.ground'), value: womenInfo.ground },
+  { label: t('women.manager'), value: womenInfo.manager }
 ])
 
 useHead({ title: () => `${t('club.heroTitle')} · Arsenal Hub` })
@@ -233,7 +257,7 @@ onMounted(() => {
             </div>
           </div>
           <div class="rounded-2xl border border-white/10 bg-arsenal-night-soft p-7 md:p-8">
-            <p class="text-[14.5px] leading-[2.1] text-white/60">{{ clubInfo.description[locale] || clubInfo.description['en-US'] }}</p>
+            <p class="text-[14.5px] leading-[2.1] text-white/60">{{ clubInfo.description[zhKey] || clubInfo.description['en-US'] }}</p>
             <div class="mt-7 flex flex-wrap gap-3.5">
               <a :href="clubInfo.officialSite" target="_blank" rel="noopener noreferrer" class="btn-red">{{ t('club.profileBtnSite') }}</a>
               <NuxtLink :to="localePath('/legends')" class="btn-ghost">{{ t('club.profileBtnLegends') }}</NuxtLink>
@@ -253,6 +277,96 @@ onMounted(() => {
             <div v-for="(cell, i) in factCells" :key="i" class="fact-cell px-6 py-4">
               <small class="block text-[11px] tracking-[.18em] text-white/40">{{ cell.label }}</small>
               <b class="mt-1 block text-[14.5px] font-bold text-white">{{ cell.value }}</b>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 酋长球场 -->
+    <section id="stadium" class="pt-16 md:pt-20">
+      <div class="shell-wide">
+        <div class="reveal mb-8 flex items-end gap-3.5">
+          <span class="h-7 w-[5px] flex-none rounded bg-arsenal-gold"></span>
+          <div>
+            <h2 class="text-2xl font-extrabold tracking-tight text-white md:text-[26px]">{{ t('club.stadiumTitle') }}</h2>
+            <p class="mt-1 text-[12.5px] tracking-[.16em] text-white/40">{{ t('club.stadiumSub') }}</p>
+          </div>
+        </div>
+
+        <div class="reveal grid grid-cols-1 gap-5 lg:grid-cols-5">
+          <div class="lg:col-span-3">
+            <div class="rounded-2xl border border-white/10 bg-arsenal-night-soft p-6">
+              <p class="text-[14px] leading-[2] text-white/65">{{ stadiumDesc }}</p>
+              <div class="mt-5 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
+                <div v-for="cell in stadiumCells" :key="cell.label">
+                  <small class="block text-[11px] tracking-[.18em] text-white/40">{{ cell.label }}</small>
+                  <b class="mt-1 block text-[13.5px] font-bold leading-relaxed text-white">{{ cell.value }}</b>
+                </div>
+              </div>
+            </div>
+            <div class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div v-for="stand in stands" :key="stand.name" class="rounded-xl border border-white/10 bg-arsenal-night-soft px-3 py-3.5 text-center">
+                <div class="text-[13px] font-bold text-white">{{ stand.name }}</div>
+                <div class="mt-1 font-score text-lg font-semibold text-arsenal-gold">{{ stand.capacity.toLocaleString() }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="lg:col-span-2">
+            <div class="rounded-2xl border border-white/10 bg-arsenal-night-soft p-6">
+              <h3 class="text-[15px] font-extrabold text-white">{{ t('stadium.transport') }}</h3>
+              <div class="mt-4 space-y-3">
+                <div v-for="(route, i) in transportRows" :key="i" class="flex items-start gap-3">
+                  <span class="mt-0.5 inline-flex h-6 w-6 flex-none items-center justify-center rounded-full bg-arsenal-red/15 text-xs font-bold text-[#ff9b9d]">{{ i + 1 }}</span>
+                  <span class="text-[13px] leading-relaxed text-white/60">{{ route }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="mt-5 overflow-hidden rounded-2xl border border-white/10">
+              <iframe
+                src="https://www.openstreetmap.org/export/embed.html?bbox=-0.1720%2C51.5450%2C-0.1370%2C51.5650&layer=mapnik&marker=51.5549%2C-0.1547"
+                width="100%"
+                height="240"
+                class="block w-full grayscale-[0.35]"
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+                title="Emirates Stadium map"
+              ></iframe>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 女足 -->
+    <section id="women" class="pt-16 md:pt-20">
+      <div class="shell-wide">
+        <div class="reveal mb-8 flex items-end gap-3.5">
+          <span class="h-7 w-[5px] flex-none rounded bg-arsenal-red"></span>
+          <div>
+            <h2 class="text-2xl font-extrabold tracking-tight text-white md:text-[26px]">{{ t('club.womenTitle') }}</h2>
+            <p class="mt-1 text-[12.5px] tracking-[.16em] text-white/40">{{ t('club.womenSub') }}</p>
+          </div>
+        </div>
+
+        <div class="reveal grid grid-cols-1 gap-5 lg:grid-cols-5">
+          <div class="rounded-2xl border border-white/10 bg-arsenal-night-soft p-6 lg:col-span-3">
+            <p class="text-[14px] leading-[2] text-white/65">{{ womenDesc }}</p>
+            <div class="mt-5 flex flex-wrap gap-x-10 gap-y-3">
+              <div v-for="cell in womenCells" :key="cell.label">
+                <small class="block text-[11px] tracking-[.18em] text-white/40">{{ cell.label }}</small>
+                <b class="mt-1 block text-[13.5px] font-bold text-white">{{ cell.value }}</b>
+              </div>
+            </div>
+            <a :href="womenInfo.officialSite" target="_blank" rel="noopener noreferrer" class="btn-ghost mt-6">{{ t('club.officialSite') }} →</a>
+          </div>
+          <div class="rounded-2xl border border-white/10 bg-arsenal-night-soft p-6 lg:col-span-2">
+            <h3 class="text-[15px] font-extrabold text-white">{{ t('club.womenHonours') }}</h3>
+            <div class="mt-4">
+              <div v-for="h in womenInfo.honours" :key="h.title['en-US']" class="flex items-center justify-between border-b border-white/[0.07] py-2.5 last:border-0 last:pb-0">
+                <span class="text-[13.5px] text-white/70">{{ h.title[zhKey] || h.title['en-US'] }}</span>
+                <b class="font-score text-xl font-bold text-arsenal-gold">{{ h.count }}</b>
+              </div>
             </div>
           </div>
         </div>

@@ -6,7 +6,7 @@
     "matchcenter": "Match Centre",
     "fixtures": "Fixtures",
     "standings": "Table",
-    "squad": "Squad",
+    "squad": "Team",
     "scorers": "Scorers",
     "legends": "Legends",
     "watch": "Watch Guide",
@@ -283,7 +283,12 @@
     "ctaTitle": "Glory Goes On",
     "ctaSub": "A new generation follows the trail of the Invincibles towards more glory. Witness history — right now.",
     "ctaBtnSquad": "Meet the Squad →",
-    "ctaBtnLegends": "Legends"
+    "ctaBtnLegends": "Legends",
+    "stadiumTitle": "Emirates Stadium",
+    "stadiumSub": "EMIRATES STADIUM · OUR NORTH LONDON HOME",
+    "womenTitle": "Arsenal Women",
+    "womenSub": "ARSENAL WOMEN · ENGLAND'S MOST SUCCESSFUL CLUB",
+    "womenHonours": "Women's Honours"
   },
   "mc": {
     "kicker": "MATCH CENTER · 2026/27 SEASON",
@@ -296,6 +301,7 @@
     "tabPl": "Premier League",
     "tabCl": "Champions League",
     "tabScorers": "Top Scorers",
+    "tabWatch": "Where to Watch",
     "allMonths": "All months",
     "fxTitle": "Fixtures & Results",
     "fxSub": "FIXTURES & RESULTS · ALL COMPETITIONS",

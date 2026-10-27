@@ -6,7 +6,7 @@
     "matchcenter": "赛事",
     "fixtures": "赛程",
     "standings": "积分榜",
-    "squad": "球员",
+    "squad": "球队",
     "scorers": "射手榜",
     "legends": "传奇",
     "watch": "观赛指南",
@@ -283,7 +283,12 @@
     "ctaTitle": "辉煌仍在续写",
     "ctaSub": "新一代枪手正追随 49 不败的足迹，向着更多荣耀进发。见证历史，就在此刻。",
     "ctaBtnSquad": "查看一线队 →",
-    "ctaBtnLegends": "传奇殿堂"
+    "ctaBtnLegends": "传奇殿堂",
+    "stadiumTitle": "酋长球场",
+    "stadiumSub": "EMIRATES STADIUM · 北伦敦之家",
+    "womenTitle": "阿森纳女足",
+    "womenSub": "ARSENAL WOMEN · 英格兰最成功的女足俱乐部",
+    "womenHonours": "女足荣誉室"
   },
   "mc": {
     "kicker": "MATCH CENTER · 2026/27 赛季",
@@ -296,6 +301,7 @@
     "tabPl": "英超积分榜",
     "tabCl": "欧冠积分榜",
     "tabScorers": "射手榜",
+    "tabWatch": "观赛指南",
     "allMonths": "全部月份",
     "fxTitle": "赛程赛果",
     "fxSub": "FIXTURES & RESULTS · 全部赛事",

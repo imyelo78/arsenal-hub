@@ -12,24 +12,14 @@ const scrolled = ref(false)
 const navItems = [
   { key: 'home', path: '/', label: 'nav.home' },
   { key: 'matchcenter', path: '/matchcenter', label: 'nav.matchcenter' },
+  { key: 'club', path: '/club', label: 'nav.club' },
   { key: 'squad', path: '/squad', label: 'nav.squad' },
-  { key: 'legends', path: '/legends', label: 'nav.legends' },
-  { key: 'club', path: '/club', label: 'nav.club' }
+  { key: 'legends', path: '/legends', label: 'nav.legends' }
 ]
-
-// 更多菜单：次级页面入口
-const moreItems = [
-  { key: 'watch', path: '/watch', label: 'nav.watch' },
-  { key: 'stadium', path: '/stadium', label: 'nav.stadium' },
-  { key: 'women', path: '/women', label: 'nav.women' }
-]
-const mobileItems = [...navItems, ...moreItems]
-
-const moreOpen = ref(false)
-const moreActive = computed(() => moreItems.some((item) => route.path.startsWith(item.path)))
+const mobileItems = navItems
 
 watch(() => route.path, () => {
-  moreOpen.value = false
+  mobileMenuOpen.value = false
 })
 
 // 首页顶部透明，滚动后毛玻璃；非首页始终深色底
@@ -43,18 +33,11 @@ function onScroll() {
   scrolled.value = window.scrollY > 40
 }
 
-function onPageClick(e: MouseEvent) {
-  if (!(e.target as HTMLElement | null)?.closest?.('[data-more-menu]')) {
-    moreOpen.value = false
-  }
-}
 onMounted(() => {
-  document.addEventListener('click', onPageClick)
   window.addEventListener('scroll', onScroll, { passive: true })
   onScroll()
 })
 onBeforeUnmount(() => {
-  document.removeEventListener('click', onPageClick)
   window.removeEventListener('scroll', onScroll)
 })
 
@@ -101,51 +84,6 @@ function toggleLocale() {
             class="absolute left-4 right-4 -bottom-0.5 h-0.5 bg-arsenal-red rounded-full"
           />
         </NuxtLink>
-
-        <!-- More dropdown -->
-        <div class="relative" data-more-menu>
-          <button
-            @click="moreOpen = !moreOpen"
-            class="relative px-4 py-2 text-sm font-medium rounded-lg transition-colors flex items-center gap-1"
-            :class="moreActive || moreOpen ? 'text-white' : 'text-white/75 hover:text-white hover:bg-white/10'"
-          >
-            {{ $t('nav.more') }}
-            <svg
-              class="w-3 h-3 transition-transform duration-200"
-              :class="moreOpen ? 'rotate-180' : ''"
-              fill="none" stroke="currentColor" viewBox="0 0 24 24"
-            >
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-            <span
-              v-if="moreActive"
-              class="absolute left-4 right-4 -bottom-0.5 h-0.5 bg-arsenal-red rounded-full"
-            />
-          </button>
-          <Transition
-            enter-active-class="transition-all duration-150 ease-out"
-            enter-from-class="opacity-0 -translate-y-1"
-            enter-to-class="opacity-100 translate-y-0"
-            leave-active-class="transition-all duration-100 ease-in"
-            leave-from-class="opacity-100 translate-y-0"
-            leave-to-class="opacity-0 -translate-y-1"
-          >
-            <div v-if="moreOpen" class="absolute right-0 top-full pt-2 z-50">
-              <div class="w-40 bg-arsenal-night-soft rounded-xl shadow-xl border border-white/10 py-1.5">
-                <NuxtLink
-                  v-for="item in moreItems"
-                  :key="item.key"
-                  :to="localePath(item.path)"
-                  class="block px-4 py-2 text-sm transition-colors rounded-lg mx-1.5"
-                  :class="isActive(item.path) ? 'text-arsenal-red font-medium' : 'text-white/70 hover:text-white hover:bg-white/10'"
-                  @click="moreOpen = false"
-                >
-                  {{ $t(item.label) }}
-                </NuxtLink>
-              </div>
-            </div>
-          </Transition>
-        </div>
 
         <!-- Language Toggle -->
         <button
